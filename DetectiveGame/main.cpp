@@ -31,6 +31,8 @@ struct App {
     bool cursorHidden = false;
     POINT center = { 0, 0 };   // центр окна в экранных координатах
     double mouseAccum = 0.0;   // накопленное смещение мыши между шагами
+    double fps = 0.0;          // текущий FPS
+    bool showFps = true;       // F3 - показать/скрыть счётчик
 
     Game game;
     Renderer renderer;
@@ -117,6 +119,12 @@ void RenderFrame() {
     HDC hdc = GetDC(g_app.hwnd);
     g_app.renderer.Present(hdc, w, h, [&](HDC dc) {
         g_app.game.DrawOverlay(dc, g_app.ui, w, h, g_app.mouseCaptured);
+        if (g_app.showFps) {
+            wchar_t fpsText[32];
+            swprintf_s(fpsText, L"FPS: %.0f", g_app.fps);
+            RECT rf = { w - 140, h - 26, w - 8, h - 4 };
+            g_app.ui.DrawString(dc, fpsText, rf, RGB(120, 255, 120), DT_RIGHT, FontSize::Small);
+        }
     });
     ReleaseDC(g_app.hwnd, hdc);
 }
@@ -138,6 +146,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         return 0;
     case WM_KEYDOWN:
         if (wp == VK_ESCAPE) ReleaseMouse();
+        else if (wp == VK_F3) g_app.showFps = !g_app.showFps;
         else g_app.game.OnKey(static_cast<int>(wp), (lp & (1 << 30)) != 0); // бит 30 - автоповтор
         return 0;
     case WM_KILLFOCUS:
@@ -187,6 +196,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&prev);
     double accumulator = 0.0;
+    double fpsTimer = 0.0;
+    int fpsFrames = 0;
 
     while (g_app.running) {
         MSG msg;
@@ -214,6 +225,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
         }
 
         RenderFrame();
+
+        // Счётчик FPS: усредняем за 0.5 секунды
+        ++fpsFrames;
+        fpsTimer += frameTime;
+        if (fpsTimer >= 0.5) {
+            g_app.fps = fpsFrames / fpsTimer;
+            fpsFrames = 0;
+            fpsTimer = 0.0;
+        }
         Sleep(1); // не грузим процессор на 100%
     }
     return 0;

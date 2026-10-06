@@ -45,4 +45,5 @@ private:
     int currentOrder_ = -1;    // заказ, который выполняем
     double arrivalTimer_ = 0.0; // через сколько придёт следующее сообщение
     double newMsgFlash_ = 0.0;  // индикатор "новое сообщение"
+    bool showMap_ = false;      // мини-карта (клавиша M)
 };

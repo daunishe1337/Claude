@@ -14,6 +14,7 @@ public:
     int Width() const { return width_; }
     int Height() const { return height_; }
     const std::wstring& Name() const { return name_; }
+    int LevelId() const { return levelId_; }
 
     // Символ клетки. За пределами карты возвращает '1' (стена).
     char Cell(int x, int y) const;
@@ -30,5 +31,6 @@ private:
     std::vector<std::string> rows_;
     std::wstring name_;
     int width_ = 0, height_ = 0;
+    int levelId_ = 0;
     double startX_ = 2.5, startY_ = 2.5, startAngle_ = 0.0;
 };

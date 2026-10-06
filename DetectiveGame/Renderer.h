@@ -50,7 +50,17 @@ public:
     void ApplyVignette(double strength);
     void Fade(uint32_t color, double amount);
 
-    // Этап 1: вид сверху (карта и игрок) вместо 3D. На этапе 2 заменим рейкастером.
+    // Этап 2: рейкастер - стены (DDA), пол, потолок, затухание по расстоянию.
+    // flicker - множитель яркости света (мерцание лампы/фонаря), около 1.0.
+    void DrawWorld(const Map& map, const Player& player, double flicker);
+
+    // Расстояние до стены для каждой колонки экрана (пригодится спрайтам на этапе 3)
+    const std::vector<double>& ZBuffer() const { return zbuffer_; }
+
+    // Маленькая карта в правом верхнем углу (включается клавишей M)
+    void DrawMiniMap(const Map& map, const Player& player);
+
+    // Вид сверху (отладочный) (карта и игрок) вместо 3D. На этапе 2 заменим рейкастером.
     // lightRadius > 0 - "фонарик": клетки далеко от игрока тонут во тьме.
     void DrawTopDown(const Map& map, const Player& player, double lightRadius);
 
@@ -63,6 +73,7 @@ private:
 
     std::vector<uint32_t> pixels_;
     std::vector<float> vignette_;
+    std::vector<double> zbuffer_;
     BITMAPINFO bmi_;
     HDC memDc_ = nullptr;
     HBITMAP memBmp_ = nullptr;

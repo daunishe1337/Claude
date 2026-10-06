@@ -1,11 +1,12 @@
 // Renderer.cpp
 #include "Renderer.h"
 #include <cmath>
+#include "Textures.h"
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 
-Renderer::Renderer() : pixels_(kWidth * kHeight, 0), vignette_(kWidth * kHeight, 0.0f) {
+Renderer::Renderer() : pixels_(kWidth * kHeight, 0), vignette_(kWidth * kHeight, 0.0f), zbuffer_(kWidth, 0.0) {
     for (int y = 0; y < kHeight; ++y) {
         for (int x = 0; x < kWidth; ++x) {
             double nx = (x - kWidth / 2.0) / (kWidth / 2.0);
@@ -120,6 +121,132 @@ void Renderer::DrawTopDown(const Map& map, const Player& player, double lightRad
     FillRect(px - 2, py - 2, 5, 5, Rgb(255, 230, 80));
     DrawLine(px, py, px + static_cast<int>(player.DirX() * cell * 2),
                      py + static_cast<int>(player.DirY() * cell * 2), Rgb(255, 80, 80));
+}
+
+namespace {
+
+// Освещённость по расстоянию: тёплый "фонарь", быстро тонущий во тьме
+double LightAt(double dist, double flicker) {
+    double l = flicker / (1.0 + dist * dist * 0.05);
+    return l < 0.025 ? 0.025 : l;
+}
+
+// Применяет яркость k и тёплый оттенок света к цвету
+uint32_t Lit(uint32_t c, double k) {
+    int r = static_cast<int>(((c >> 16) & 255) * k);
+    int g = static_cast<int>(((c >> 8) & 255) * k * 0.95);
+    int b = static_cast<int>((c & 255) * k * 0.85);
+    if (r > 255) r = 255;
+    if (g > 255) g = 255;
+    if (b > 255) b = 255;
+    return Rgb(r, g, b);
+}
+
+} // namespace
+
+void Renderer::DrawWorld(const Map& map, const Player& player, double flicker) {
+    const int W = kWidth, H = kHeight, half = H / 2;
+    const double px = player.x, py = player.y;
+    const double dirX = player.DirX(), dirY = player.DirY();
+    // Плоскость камеры перпендикулярна взгляду; длина 0.66 даёт угол обзора около 66 градусов.
+    // (вправо на экране = (-dirY, dirX), так как ось Y направлена вниз)
+    const double planeX = -dirY * 0.66, planeY = dirX * 0.66;
+
+    const Texture& floorTex = Textures::Floor(map.LevelId());
+    const Texture& ceilTex = Textures::Ceiling(map.LevelId());
+
+    // ---- Пол и потолок: строка за строкой ----
+    const double rx0 = dirX - planeX, ry0 = dirY - planeY; // левый луч
+    const double rx1 = dirX + planeX, ry1 = dirY + planeY; // правый луч
+    for (int y = 0; y < half; ++y) {
+        // Горизонтальная полоса экрана: потолок в строке y, пол - в зеркальной строке
+        int p = half - y; // расстояние от горизонта в пикселях
+        double rowDist = (0.5 * H) / p;
+        double stepX = rowDist * (rx1 - rx0) / W;
+        double stepY = rowDist * (ry1 - ry0) / W;
+        double fx = px + rowDist * rx0;
+        double fy = py + rowDist * ry0;
+        double light = LightAt(rowDist, flicker);
+        uint32_t* ceilRow = &pixels_[y * W];
+        uint32_t* floorRow = &pixels_[(H - 1 - y) * W];
+        for (int x = 0; x < W; ++x) {
+            int tx = static_cast<int>(std::floor(fx * Texture::kSize));
+            int ty = static_cast<int>(std::floor(fy * Texture::kSize));
+            floorRow[x] = Lit(floorTex.At(tx, ty), light);
+            ceilRow[x] = Lit(ceilTex.At(tx, ty), light);
+            fx += stepX;
+            fy += stepY;
+        }
+    }
+
+    // ---- Стены: по лучу на каждую колонку (алгоритм DDA) ----
+    for (int x = 0; x < W; ++x) {
+        double cameraX = 2.0 * x / W - 1.0;
+        double rayX = dirX + planeX * cameraX;
+        double rayY = dirY + planeY * cameraX;
+
+        int mapX = static_cast<int>(std::floor(px));
+        int mapY = static_cast<int>(std::floor(py));
+        double deltaX = rayX == 0.0 ? 1e30 : std::fabs(1.0 / rayX);
+        double deltaY = rayY == 0.0 ? 1e30 : std::fabs(1.0 / rayY);
+        int stepMapX, stepMapY;
+        double sideX, sideY;
+        if (rayX < 0) { stepMapX = -1; sideX = (px - mapX) * deltaX; }
+        else          { stepMapX = 1;  sideX = (mapX + 1.0 - px) * deltaX; }
+        if (rayY < 0) { stepMapY = -1; sideY = (py - mapY) * deltaY; }
+        else          { stepMapY = 1;  sideY = (mapY + 1.0 - py) * deltaY; }
+
+        int side = 0;
+        for (int i = 0; i < 128; ++i) { // ограничение на всякий случай
+            if (sideX < sideY) { sideX += deltaX; mapX += stepMapX; side = 0; }
+            else               { sideY += deltaY; mapY += stepMapY; side = 1; }
+            if (map.IsWall(mapX, mapY)) break;
+        }
+
+        // Перпендикулярное расстояние (без "рыбьего глаза")
+        double perp = side == 0 ? sideX - deltaX : sideY - deltaY;
+        if (perp < 0.05) perp = 0.05;
+        zbuffer_[x] = perp;
+
+        int lineH = static_cast<int>(H / perp);
+        int drawStart = -lineH / 2 + half;
+        int drawEnd = lineH / 2 + half;
+
+        // Какой столбец текстуры попал под луч
+        double wallX = side == 0 ? py + perp * rayY : px + perp * rayX;
+        wallX -= std::floor(wallX);
+        int texX = static_cast<int>(wallX * Texture::kSize);
+        if ((side == 0 && rayX > 0) || (side == 1 && rayY < 0)) texX = Texture::kSize - 1 - texX;
+
+        const Texture& tex = Textures::Wall(map.Cell(mapX, mapY));
+        double texStep = static_cast<double>(Texture::kSize) / lineH;
+        double texPos = (drawStart < 0 ? -drawStart : 0) * texStep;
+
+        double light = LightAt(perp, flicker);
+        if (side == 1) light *= 0.72; // грани по оси Y темнее: объём
+
+        int y0 = drawStart < 0 ? 0 : drawStart;
+        int y1 = drawEnd >= H ? H - 1 : drawEnd;
+        for (int y = y0; y <= y1; ++y) {
+            int texY = static_cast<int>(texPos);
+            texPos += texStep;
+            pixels_[y * W + x] = Lit(tex.At(texX, texY), light);
+        }
+    }
+}
+
+void Renderer::DrawMiniMap(const Map& map, const Player& player) {
+    const int cell = 4;
+    const int ox = kWidth - map.Width() * cell - 8, oy = 8;
+    FillRect(ox - 2, oy - 2, map.Width() * cell + 4, map.Height() * cell + 4, Rgb(0, 0, 0));
+    for (int y = 0; y < map.Height(); ++y)
+        for (int x = 0; x < map.Width(); ++x)
+            FillRect(ox + x * cell, oy + y * cell, cell, cell,
+                     map.IsWall(x, y) ? Rgb(150, 130, 110) : Rgb(30, 30, 36));
+    int px = ox + static_cast<int>(player.x * cell), py = oy + static_cast<int>(player.y * cell);
+    FillRect(px - 1, py - 1, 3, 3, Rgb(255, 230, 80));
+    DrawLine(px, py, px + static_cast<int>(player.DirX() * 8), py + static_cast<int>(player.DirY() * 8),
+             Rgb(255, 80, 80));
 }
 
 void Renderer::EnsureBackBuffer(HDC target, int w, int h) {

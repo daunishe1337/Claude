@@ -116,6 +116,7 @@ void Map::Load(int levelId) {
     for (int i = 0; i < def.rowCount; ++i) rows_.emplace_back(def.rows[i]);
     height_ = static_cast<int>(rows_.size());
     width_ = static_cast<int>(rows_[0].size());
+    levelId_ = levelId;
     name_ = def.name;
     startX_ = def.startX;
     startY_ = def.startY;

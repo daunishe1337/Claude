@@ -123,6 +123,7 @@ void Game::OnKey(int vk, bool repeat) {
     }
     case Scene::Mission:
         if (!repeat && vk == 'R' && NearExit()) ReturnToCar();
+        if (!repeat && vk == 'M') showMap_ = !showMap_;
         break;
     default:
         break;
@@ -170,10 +171,13 @@ void Game::Render(Renderer& r) {
         break;
     }
     case Scene::Mission: {
-        // Мерцающий "фонарик": радиус слегка дрожит
-        double radius = 9.5 + 0.5 * std::sin(totalTime_ * 13.0) + 0.3 * std::sin(totalTime_ * 31.0);
-        r.DrawTopDown(map_, player_, radius);
-        r.ApplyVignette(0.45);
+        // Мерцание света: лёгкое дрожание плюс редкие короткие "провалы" лампы
+        double flick = 0.94 + 0.04 * std::sin(totalTime_ * 23.0) + 0.02 * std::sin(totalTime_ * 7.1);
+        double cycle = std::fmod(totalTime_, 11.0);
+        if (cycle < 0.15 || (cycle > 0.3 && cycle < 0.38)) flick *= 0.45;
+        r.DrawWorld(map_, player_, flick);
+        r.ApplyVignette(0.5);
+        if (showMap_) r.DrawMiniMap(map_, player_);
         break;
     }
     }
@@ -293,7 +297,7 @@ void Game::DrawOverlay(HDC dc, UI& ui, int w, int h, bool mouseCaptured) {
             ui.DrawString(dc, L"[R] - вернуться в машину", r2, RGB(255, 220, 120));
         }
         std::wstring hint = mouseCaptured
-            ? L"WASD - ходьба, мышь/стрелки - поворот, Esc - освободить мышь"
+            ? L"WASD - ходьба, мышь/стрелки - поворот, M - карта, Esc - освободить мышь"
             : L"Щёлкните в окне, чтобы захватить мышь. WASD, стрелки - управление";
         RECT r3 = { 12, h - 36, w - 12, h - 8 };
         ui.DrawString(dc, hint, r3, RGB(200, 200, 200));
