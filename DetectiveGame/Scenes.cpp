@@ -1,4 +1,4 @@
-// Scenes.cpp
+﻿// Scenes.cpp
 #include "Scenes.h"
 #include <cmath>
 

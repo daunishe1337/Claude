@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 // Player.h - игрок: позиция, угол обзора, движение с коллизиями.
 #include <cmath>
 #include "Map.h"

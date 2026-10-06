@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 // Orders.h - система заказов: сообщения приходят на телефон героя.
 #include <string>
 #include <vector>

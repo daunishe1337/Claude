@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 // UI.h - текст интерфейса через GDI (шрифты, вывод строк с тенью, панели).
 #ifndef NOMINMAX
 #define NOMINMAX

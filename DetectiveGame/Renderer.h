@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 // Renderer.h - программный пиксельный буфер и вывод в окно через StretchDIBits.
 #ifndef NOMINMAX
 #define NOMINMAX

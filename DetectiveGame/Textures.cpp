@@ -1,4 +1,4 @@
-// Textures.cpp
+﻿// Textures.cpp
 #include "Textures.h"
 #include <cmath>
 #include <cstdlib>

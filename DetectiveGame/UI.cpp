@@ -1,4 +1,4 @@
-// UI.cpp
+﻿// UI.cpp
 #include "UI.h"
 
 #pragma comment(lib, "gdi32.lib")

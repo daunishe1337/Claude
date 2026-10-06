@@ -1,4 +1,4 @@
-// Renderer.cpp
+﻿// Renderer.cpp
 #include "Renderer.h"
 #include <cmath>
 #include "Textures.h"

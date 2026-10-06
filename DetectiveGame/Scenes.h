@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 // Scenes.h - процедурно нарисованные картинки для катсцены и машины (всё в пиксельный буфер).
 #include "Renderer.h"
 
