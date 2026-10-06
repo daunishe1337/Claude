@@ -9,7 +9,7 @@
 #include <cwchar>
 #include <string>
 
-#include "Map.h"
+#include "Game.h"
 #include "Player.h"
 #include "Renderer.h"
 #include "UI.h"
@@ -20,7 +20,7 @@
 namespace {
 
 const wchar_t kClassName[] = L"DetectiveWindowClass";
-const wchar_t kTitle[] = L"Детектив: Особняк Ворониных";
+const wchar_t kTitle[] = L"Детектив (хоррор) - прототип";
 const double kStep = 1.0 / 60.0; // фиксированный шаг симуляции
 
 // Всё состояние приложения в одном месте
@@ -32,8 +32,7 @@ struct App {
     POINT center = { 0, 0 };   // центр окна в экранных координатах
     double mouseAccum = 0.0;   // накопленное смещение мыши между шагами
 
-    Map map;
-    Player player;
+    Game game;
     Renderer renderer;
     UI ui;
     InputState input;
@@ -113,22 +112,11 @@ void RenderFrame() {
     int w = rc.right, h = rc.bottom;
     if (w <= 0 || h <= 0) return; // окно свёрнуто
 
-    g_app.renderer.DrawTopDown(g_app.map, g_app.player);
+    g_app.game.Render(g_app.renderer);
 
     HDC hdc = GetDC(g_app.hwnd);
     g_app.renderer.Present(hdc, w, h, [&](HDC dc) {
-        wchar_t line[128];
-        const double kPi = 3.14159265358979323846;
-        swprintf_s(line, L"X: %.2f   Y: %.2f   Угол: %.0f°",
-                   g_app.player.x, g_app.player.y, g_app.player.angle * 180.0 / kPi);
-        RECT r1 = { 12, h - 64, w - 12, h - 36 };
-        g_app.ui.DrawString(dc, line, r1, RGB(255, 255, 255));
-
-        std::wstring hint = g_app.mouseCaptured
-            ? L"WASD - ходьба, мышь/стрелки - поворот, Esc - освободить мышь"
-            : L"Щёлкните в окне, чтобы захватить мышь. WASD, стрелки - управление";
-        RECT r2 = { 12, h - 36, w - 12, h - 8 };
-        g_app.ui.DrawString(dc, hint, r2, RGB(200, 200, 200));
+        g_app.game.DrawOverlay(dc, g_app.ui, w, h, g_app.mouseCaptured);
     });
     ReleaseDC(g_app.hwnd, hdc);
 }
@@ -146,10 +134,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         return 0;
     }
     case WM_LBUTTONDOWN:
-        CaptureMouse();
+        if (g_app.game.InMission()) CaptureMouse(); // мышь нужна только при хождении по локации
         return 0;
     case WM_KEYDOWN:
         if (wp == VK_ESCAPE) ReleaseMouse();
+        else g_app.game.OnKey(static_cast<int>(wp), (lp & (1 << 30)) != 0); // бит 30 - автоповтор
         return 0;
     case WM_KILLFOCUS:
         ReleaseMouse();
@@ -190,7 +179,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     if (!g_app.hwnd) return 1;
 
     g_app.ui.Init();
-    g_app.player.Spawn(g_app.map);
     ShowWindow(g_app.hwnd, nCmdShow);
     UpdateWindow(g_app.hwnd);
 
@@ -215,12 +203,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
         if (frameTime > 0.25) frameTime = 0.25; // защита от "спирали смерти" после паузы
         accumulator += frameTime;
 
+        if (!g_app.game.InMission()) ReleaseMouse();
         PollInput();
         while (accumulator >= kStep) {
             InputState step = g_app.input;
             step.mouseDX = g_app.mouseAccum; // вся накопленная мышь уходит в первый шаг
             g_app.mouseAccum = 0.0;
-            g_app.player.Update(step, g_app.map, kStep);
+            g_app.game.Update(kStep, step);
             accumulator -= kStep;
         }
 
