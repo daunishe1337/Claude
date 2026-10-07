@@ -104,6 +104,8 @@
       <!-- Исходники в UTF-8 (с BOM), строки — тоже UTF-8 -->
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
+      <!-- Just My Code не нужен (сторонних библиотек нет), а проверка в каждой функции тормозит рендер -->
+      <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -144,6 +146,8 @@
       <!-- Исходники в UTF-8 (с BOM), строки — тоже UTF-8 -->
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
+      <!-- Just My Code не нужен (сторонних библиотек нет), а проверка в каждой функции тормозит рендер -->
+      <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

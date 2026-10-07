@@ -184,18 +184,27 @@ LRESULT Platform::Impl::handle(UINT msg, WPARAM wp, LPARAM lp) {
         if (input) input->releaseAll();
         return 0;
     case WM_SYSKEYDOWN:
-        // Alt+Enter — полноэкранный режим.
-        if (wp == VK_RETURN && (lp & (1 << 29))) {
-            if (input) input->onKey(Key::F11, true);
+        // Alt+Enter — полноэкранный режим. Нажатие и отпускание сразу: нажатие
+        // защёлкнется до ближайшего тика, а клавиша не «залипнет», даже если Alt
+        // отпустили раньше Enter. Автоповтор (бит 30) игнорируем.
+        if (wp == VK_RETURN && (lp & (1 << 29)) && !(lp & (1 << 30))) {
+            if (input) {
+                input->onKey(Key::F11, true);
+                input->onKey(Key::F11, false);
+            }
             return 0;
         }
         break; // Alt+F4 и прочее — стандартная обработка
     case WM_SYSKEYUP:
-        if (wp == VK_RETURN) {
-            if (input) input->onKey(Key::F11, false);
-            return 0;
-        }
+        if (wp == VK_RETURN) return 0;
         break;
+    case WM_SYSCOMMAND:
+        // Alt или F10 сами по себе не должны открывать системное меню: его модальный
+        // цикл остановил бы игру до следующего нажатия.
+        if ((wp & 0xFFF0) == SC_KEYMENU) return 0;
+        break;
+    case WM_MENUCHAR:
+        return MAKELRESULT(0, MNC_CLOSE); // Alt+буква — без системного «бипа»
     case WM_KEYDOWN:
     case WM_KEYUP: {
         Key k;
@@ -207,15 +216,28 @@ LRESULT Platform::Impl::handle(UINT msg, WPARAM wp, LPARAM lp) {
         return 0;
     case WM_LBUTTONDOWN:
     case WM_LBUTTONUP:
-        mouseToGame(lp);
-        if (input) input->onMouseButton(MouseButton::Left, msg == WM_LBUTTONDOWN);
-        if (msg == WM_LBUTTONDOWN) SetCapture(hwnd);
-        else ReleaseCapture();
-        return 0;
     case WM_RBUTTONDOWN:
-    case WM_RBUTTONUP:
+    case WM_RBUTTONUP: {
         mouseToGame(lp);
-        if (input) input->onMouseButton(MouseButton::Right, msg == WM_RBUTTONDOWN);
+        const bool isDown = (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN);
+        const MouseButton b =
+            (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP) ? MouseButton::Left : MouseButton::Right;
+        if (input) input->onMouseButton(b, isDown);
+        // Захват мыши, пока зажата хотя бы одна кнопка: отпускание за пределами
+        // окна тоже дойдёт до нас, и кнопка не «залипнет».
+        if (isDown) {
+            if (GetCapture() != hwnd) SetCapture(hwnd);
+        } else if ((wp & (MK_LBUTTON | MK_RBUTTON)) == 0) {
+            ReleaseCapture();
+        }
+        return 0;
+    }
+    case WM_CAPTURECHANGED:
+        // Захват отобрало другое окно — считаем все кнопки отпущенными.
+        if (reinterpret_cast<HWND>(lp) != hwnd && input) {
+            input->onMouseButton(MouseButton::Left, false);
+            input->onMouseButton(MouseButton::Right, false);
+        }
         return 0;
     case WM_SETCURSOR:
         if (LOWORD(lp) == HTCLIENT) {

@@ -102,7 +102,7 @@ int runGame() {
 } // namespace
 
 // Точка входа для подсистемы Windows (/SUBSYSTEM:WINDOWS).
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) { return runGame(); }
+int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) { return runGame(); }
 
 // Запасная точка входа: если проект случайно собран как консольный
 // (/SUBSYSTEM:CONSOLE), игра всё равно запустится.
