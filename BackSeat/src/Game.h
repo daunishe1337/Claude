@@ -31,6 +31,7 @@
 #include "RealWorldScene.h"
 #include "Renderer.h"
 
+#include <filesystem>
 #include <memory>
 
 enum class GameState { Menu, Intro, Playing, Paused, Dying, GameOver, Arriving, Victory };
@@ -48,6 +49,9 @@ public:
     void update(float dt, const Input& input);
     // Отрисовать текущий кадр в холст 320x180.
     void render(Canvas& out);
+
+    // Файл сохранения достижений (задаёт платформа; без него — только в памяти).
+    void setSaveFile(const std::filesystem::path& file);
 
     // Окно потеряло фокус: в поездке ставим паузу.
     void onFocusLost();

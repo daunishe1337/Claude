@@ -9,6 +9,7 @@
 #include "Input.h"
 #include "Renderer.h"
 
+#include <filesystem>
 #include <memory>
 
 class Platform {
@@ -38,6 +39,9 @@ public:
 
     // Высокоточное время в секундах с момента запуска.
     double now() const;
+
+    // Файл сохранения рядом с .exe (достижения). Пустой путь — если узнать не удалось.
+    std::filesystem::path saveFilePath() const;
 
     // Короткий сон (мс) для экономии CPU между кадрами.
     void sleepMs(int ms) const;

@@ -48,6 +48,9 @@ struct RealWorldView {
     bool showHud = true;        // HUD (выключается в меню/скринсейвере)
     bool showConsole = true;    // опущенная консоль внизу экрана
     int consoleDpad = 0;        // нажатая сторона крестовины (для анимации)
+    bool endless = false;       // бесконечный режим: вместо пути до дома — пройденные км
+    float kmDriven = 0.0f;      // пройдено км (для HUD бесконечного режима)
+    float facelessTurn = 0.0f;  // 0..1: родители оборачиваются к ребёнку, а лиц у них нет
 };
 
 class RealWorldScene {

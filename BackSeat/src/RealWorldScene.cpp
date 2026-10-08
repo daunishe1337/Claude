@@ -3237,7 +3237,8 @@ void RealWorldScene::render(Canvas& out, const RealWorldView& view, const Monste
     if (view.showHud) {
         hud::drawFuelGauge(out, 4, 4, view.fuel / 100.0f, view.lowFuelWarning, view.time);
         hud::drawThreatBar(out, 4, 20, threatK, view.time);
-        hud::drawTripBar(out, 246, 4, 70, view.tripProgress, view.kmLeft);
+        if (view.endless) hud::drawEndlessBar(out, 246, 4, 70, view.kmDriven, view.time);
+        else hud::drawTripBar(out, 246, 4, 70, view.tripProgress, view.kmLeft);
         hud::drawCameraStatus(out, 272, 148, view.hasCamera, view.cameraCharge, view.superFlash, view.time);
         if (view.lockActive) hud::drawLockStatus(out, 258, 134, view.lockLeft);
         int hy = 170;

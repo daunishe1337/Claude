@@ -16,6 +16,8 @@
 // ============================================================================
 #include "Game.h"
 
+#include "Achievements.h"
+
 #include "Audio.h"
 #include "Common.h"
 #include "ConsoleMiniGame.h"
@@ -92,6 +94,30 @@ const DifficultyPreset kDifficulties[] = {
 };
 constexpr int kDifficultyCount = static_cast<int>(sizeof(kDifficulties) / sizeof(kDifficulties[0]));
 constexpr int kDefaultDifficulty = 1;
+
+// ---- Бесконечная дорога (секрет: 5 нажатий F за 2 секунды в меню) ----------
+constexpr int kSecretTaps = 5;
+constexpr float kSecretWindow = 2.0f;     // за сколько секунд нужно успеть
+constexpr float kFacelessAt = 180.0f;     // через 3 минуты родители замолкают и оборачиваются
+constexpr float kFacelessTurn = 6.0f;     // поворот длится...
+constexpr float kEndlessCueMin = 35.0f;   // «мы тут уже проезжали» — интервал реплик
+constexpr float kEndlessCueMax = 50.0f;
+constexpr float kEndlessKmGoal = 15.0f;   // достижение «Дальнобойщик»
+
+// ---- «Притвориться спящим» (бесконечная дорога: удерживать F) ----------------
+constexpr float kSleepHold = 0.45f;   // столько держать F, чтобы закрыть глаза (короче — снимок)
+constexpr float kSleepZone = 0.32f;   // полуширина зелёной зоны дыхания (шкала -1..1)
+constexpr float kSleepPush = 7.0f;    // сила A/D
+constexpr float kSleepGrace = 0.7f;   // сколько можно пробыть вне зоны, пока не заметят
+constexpr float kSleepCalm = 4.0f;    // угроза тает, пока дышишь ровно (ед./с)
+constexpr float kSleepCooldown = 2.5f; // после «тебя заметили» глаза не закрыть
+
+// ---- Громкость (E) ---------------------------------------------------------------
+constexpr float kVolumeStep = 0.1f;
+
+// ---- Достижения ----------------------------------------------------------------
+constexpr float kPopupTime = 3.2f;        // всплывающее «ДОСТИЖЕНИЕ», с
+constexpr float kConsoleStreak = 60.0f;   // «Не отрываясь»: минута с поднятой консолью
 
 // ---- Виды и экраны ----------------------------------------------------------------
 constexpr int kW = cfg::kScreenW;
@@ -463,6 +489,36 @@ struct Game::State {
     const DifficultyPreset& diff() const { return kDifficulties[difficulty]; }
     int photos = 0;
     int hits = 0;
+    float maxThreat = 0.0f;     // для «На волоске»
+    float consoleRunT = 0.0f;   // сколько секунд подряд консоль у лица
+
+    // ---- Бесконечная дорога ----
+    bool endless = false;       // включена в меню (секретным кодом); переживает рестарты
+    bool endlessTrip = false;   // текущая поездка — бесконечная
+    float kmDriven = 0.0f;
+    float endlessCueT = 0.0f;   // до следующей «петли» в разговоре родителей
+    bool facelessStarted = false;
+    float facelessT = 0.0f;     // 0..1 — родители оборачиваются
+    std::array<float, kSecretTaps> secretTaps{};
+    int secretIdx = 0;
+    int secretCount = 0;
+
+    float holdF = 0.0f;         // сколько держится F (короткое нажатие — снимок)
+    bool sleeping = false;      // «притворяется спящим»
+    float sleepEyes = 0.0f;     // 0..1 — веки закрыты (анимация)
+    float sleepPos = 0.0f;      // бегунок дыхания -1..1
+    float sleepVel = 0.0f;
+    float sleepOut = 0.0f;      // сколько секунд бегунок вне зелёной зоны
+    float sleepCooldown = 0.0f;
+    float userVolume = 1.0f;    // громкость, выбранная клавишей E (переживает рестарты)
+    bool toastVolume = false;   // тост показывает громкость, а не вкл/выкл звука
+
+    // ---- Достижения ----
+    Achievements ach;
+    bool achScreen = false;     // в меню открыт список достижений
+    int achCursor = 0;
+    Ach popupAch = Ach::FirstTrip;
+    float popupT = kPopupTime;  // >= kPopupTime — уведомления нет
 
     // ---- Сглаженные слои звука ----
     float ambMusic = 0.0f;
@@ -497,6 +553,12 @@ struct Game::State {
     void updateArriving(float dt);
     void updateResult(float dt, const Input& in, bool accept);
     void updateAmbient(float dt);
+    void updateEndless(float dt);
+    void updateSleep(float dt, const Input& in, bool accept);
+    void wakeUp(bool caught);
+    void trackAchievements(float dt);
+    void onTripWon();
+    void updatePopup(float dt);
 
     // ---- Механики ----
     void handleAim(const Input& in);
@@ -531,6 +593,9 @@ struct Game::State {
     void renderVictory(Canvas& out);
     void renderResult(Canvas& out, bool victory);
     void renderToast(Canvas& out) const;
+    void renderAchievements(Canvas& out) const;
+    void renderPopup(Canvas& out) const;
+    void renderSleep(Canvas& out) const;
 };
 
 // ============================================================================
@@ -609,6 +674,10 @@ void Game::State::enterMenu() {
     capturePending = false;
     hint = Hint::None;
     lose = LoseReason::None;
+    achScreen = false;
+    endlessTrip = false;
+    facelessT = 0.0f;
+    secretCount = 0;
     audio.stopAllSfx();
 }
 
@@ -680,6 +749,18 @@ void Game::State::startTrip(uint32_t seed) {
     hintFuelShown = false;
     photos = 0;
     hits = 0;
+    maxThreat = 0.0f;
+    consoleRunT = 0.0f;
+    endlessTrip = endless;
+    kmDriven = 0.0f;
+    endlessCueT = rng.range(kEndlessCueMin, kEndlessCueMax);
+    facelessStarted = false;
+    facelessT = 0.0f;
+    holdF = 0.0f;
+    sleeping = false;
+    sleepEyes = 0.0f;
+    sleepCooldown = 0.0f;
+    ach.unlock(Ach::FirstTrip);
     ambDread = 0.0f;
     ambHeart = 0.0f;
 
@@ -697,6 +778,7 @@ void Game::State::enterDying(LoseReason r) {
     state = GameState::Dying;
     stateT = 0.0f;
     lose = r;
+    ach.unlock(r == LoseReason::Fuel ? Ach::LoseFuel : Ach::LoseMonster);
     view = ViewMode::RealWorld;
     hint = Hint::None;
     hintQueued = Hint::None;
@@ -727,6 +809,7 @@ void Game::State::enterArriving() {
     view = ViewMode::RealWorld;
     monster.flee(true);
     parents.cue(ParentCue::Arrived);
+    onTripWon();
     dismissHint(hint);
     hintQueued = Hint::None;
 }
@@ -742,9 +825,46 @@ void Game::State::updateMenu(float dt, const Input& in, bool accept) {
     mini.update(dt, 0, false, 0.15f, false);
     mini.takeEvents();
     if (!accept) return;
+    if (achScreen) {
+        // Список достижений: две колонки, стрелки — выбор, ESC/TAB/ENTER — назад.
+        const int rows = (kAchCount + 1) / 2;
+        int col = achCursor / rows, row = achCursor % rows;
+        if (in.pressed(Key::Up) || in.pressed(Key::W)) row = (row + rows - 1) % rows;
+        if (in.pressed(Key::Down) || in.pressed(Key::S)) row = (row + 1) % rows;
+        if (in.pressed(Key::Left) || in.pressed(Key::A) || in.pressed(Key::Right) || in.pressed(Key::D)) col = 1 - col;
+        const int idx = std::min(col * rows + row, kAchCount - 1);
+        if (idx != achCursor) {
+            achCursor = idx;
+            audio.play(Sfx::MenuMove, 0.6f);
+        }
+        if (in.pressed(Key::Escape) || in.pressed(Key::Tab) || in.pressed(Key::Enter)) {
+            achScreen = false;
+            audio.play(Sfx::MenuMove);
+        }
+        return;
+    }
     if (in.pressed(Key::Escape)) {
         quit = true;
         return;
+    }
+    if (in.pressed(Key::Tab)) {
+        achScreen = true;
+        achCursor = 0;
+        audio.play(Sfx::MenuSelect);
+        return;
+    }
+    // Секрет: 5 нажатий F за 2 секунды включают (и выключают) бесконечную дорогу.
+    if (in.pressed(Key::F)) {
+        secretTaps[static_cast<size_t>(secretIdx)] = stateT;
+        secretIdx = (secretIdx + 1) % kSecretTaps;
+        ++secretCount;
+        const float oldest = secretTaps[static_cast<size_t>(secretIdx)]; // самое старое из пяти
+        if (secretCount >= kSecretTaps && stateT - oldest <= kSecretWindow) {
+            endless = !endless;
+            secretCount = 0;
+            audio.play(endless ? Sfx::MonsterGrowl : Sfx::MenuMove, 0.9f);
+            if (endless) ach.unlock(Ach::EndlessFound);
+        }
     }
     // Выбор сложности: влево/вправо по кругу.
     int step = 0;
@@ -790,7 +910,8 @@ void Game::State::updatePlaying(float dt, const Input& in, bool accept) {
             steerNow = in.horizontal();
         } else {
             handleAim(in);
-            if (in.pressed(Key::F) || in.pressed(Key::E) || in.mousePressed(MouseButton::Left)) shoot();
+            // На бесконечной дороге F работает по отпусканию: долгое удержание — «уснуть».
+            if ((in.pressed(Key::F) && !endlessTrip) || in.mousePressed(MouseButton::Left)) shoot();
         }
     }
     steer = steerNow;
@@ -805,6 +926,9 @@ void Game::State::updatePlaying(float dt, const Input& in, bool accept) {
     updateWorld(dt);
     updateParents(dt);
     updateHints(dt);
+    updateSleep(dt, in, accept);
+    if (endlessTrip) updateEndless(dt);
+    trackAchievements(dt);
 
     // ---- Переходы ----
     if (monster.state() == MonsterState::Entered) {
@@ -913,6 +1037,7 @@ void Game::State::handleAim(const Input& in) {
 
 void Game::State::toggleView() {
     view = view == ViewMode::RealWorld ? ViewMode::Console : ViewMode::RealWorld;
+    if (sleeping) wakeUp(false);
     if (view == ViewMode::Console) {
         raisedOnce = true;
         dismissHint(Hint::Raise);
@@ -939,7 +1064,14 @@ void Game::State::shoot() {
     capturePending = true;
     captureHit = hit;
     ++photos;
-    if (hit) ++hits;
+    ach.unlock(Ach::FirstPhoto);
+    if (hit) {
+        ++hits;
+        ach.addHits(1);
+        if (super) ach.unlock(Ach::SuperHit);
+    } else {
+        ach.unlock(Ach::Miss);
+    }
     audio.play(Sfx::CameraShutter);
     parents.cue(ParentCue::CameraFlash);
 }
@@ -958,6 +1090,7 @@ void Game::State::updateCar(float dt) {
     case EngineState::Sputtering:
         if (fuel > 0.0f) { // канистра успела
             engine = EngineState::Running;
+            ach.unlock(Ach::SputterSave);
             break;
         }
         sputterT += dt;
@@ -987,7 +1120,10 @@ void Game::State::updateCar(float dt) {
     else if (engine == EngineState::Dead) alive = 0.0f;
     engineVis = approach(engineVis, alive, dt * 6.0f);
 
-    progress = std::min(1.0f, progress + dt * carSpeed / kTripSeconds);
+    // На бесконечной дороге дом не приближается: прогресс (он же агрессия) упирается
+    // в потолок, а километры просто копятся.
+    progress = std::min(endlessTrip ? 0.999f : 1.0f, progress + dt * carSpeed / kTripSeconds);
+    kmDriven += dt * carSpeed * kTripKm / kTripSeconds;
 
     if (fuel < kLowFuel && lowFuelArmed) {
         lowFuelArmed = false;
@@ -998,7 +1134,7 @@ void Game::State::updateCar(float dt) {
         }
     }
     if (fuel > kLowFuelRearm) lowFuelArmed = true;
-    if (!nearHomeCued && progress >= kNearHome) {
+    if (!nearHomeCued && !endlessTrip && progress >= kNearHome) {
         nearHomeCued = true;
         parents.cue(ParentCue::NearHome);
     }
@@ -1050,6 +1186,7 @@ void Game::State::onMiniEvent(MiniEvent e) {
     case MiniEvent::PickedLock:
         lockLeft = kLockTime;
         monster.reduceThreat(kLockThreat);
+        ach.unlock(Ach::LockUsed);
         audio.play(Sfx::ConsolePickupItem);
         break;
     case MiniEvent::Crashed:
@@ -1069,6 +1206,9 @@ void Game::State::updateMonster(float dt, float aggression, float breakMul, bool
     for (const MonsterEventInfo& e : monster.takeEvents()) {
         scene.onMonsterEvent(e);
         playMonsterSound(e);
+        // Страх сбивает дыхание «спящего».
+        if (sleeping && (e.type == MonsterEvent::Step || e.type == MonsterEvent::Scrape)) sleepVel += rng.signedUnit() * 0.8f;
+        if (sleeping && (e.type == MonsterEvent::Bang || e.type == MonsterEvent::Landed)) sleepVel += rng.signedUnit() * 2.0f;
         if (!live) continue;
         if (e.type == MonsterEvent::Landed && rng.chance(kCueThudChance)) parents.cue(ParentCue::RoofThud);
         if (e.type == MonsterEvent::Bang && rng.chance(kCueBangChance)) parents.cue(ParentCue::WindowBang);
@@ -1106,6 +1246,116 @@ void Game::State::updateParents(float dt) {
         const bool dad = who == Speaker::Dad;
         audio.play(dad ? Sfx::MumbleDad : Sfx::MumbleMom, 0.8f + 0.25f * parents.tension(), dad ? -0.35f : 0.35f,
                    dur);
+    }
+}
+
+// ---- Бесконечная дорога ----
+// Родители всё чаще замечают, что дорога «повторяется»; через 3 минуты они
+// замолкают и медленно оборачиваются к ребёнку. Лиц у них нет.
+void Game::State::updateEndless(float dt) {
+    if (!facelessStarted) {
+        endlessCueT -= dt;
+        if (endlessCueT <= 0.0f) {
+            parents.cue(ParentCue::EndlessLoop);
+            endlessCueT = rng.range(kEndlessCueMin, kEndlessCueMax);
+        }
+        if (tripTime >= kFacelessAt) {
+            facelessStarted = true;
+            parents.silence();
+            audio.play(Sfx::LoseSting, 0.7f);
+        }
+    } else if (!sleeping && facelessT < 1.0f) {
+        facelessT = std::min(1.0f, facelessT + dt / kFacelessTurn);
+        if (facelessT >= 1.0f) ach.unlock(Ach::Faceless);
+    }
+    if (kmDriven >= kEndlessKmGoal) ach.unlock(Ach::Endless15km);
+}
+
+// ---- «Притвориться спящим» ----
+// Удерживая F на бесконечной дороге, ребёнок закрывает глаза. Дыхание надо держать
+// ровным (A/D — бегунок в зелёной зоне): тогда гость теряет интерес, а безликие
+// родители отворачиваются. Сбился — тебя заметили.
+void Game::State::updateSleep(float dt, const Input& in, bool accept) {
+    const bool canSleep = endlessTrip && view == ViewMode::RealWorld && accept;
+    const bool fDown = canSleep && in.down(Key::F);
+    sleepCooldown = std::max(0.0f, sleepCooldown - dt);
+    if (!sleeping) {
+        if (fDown) {
+            holdF += dt;
+            if (holdF >= kSleepHold && sleepCooldown <= 0.0f) {
+                sleeping = true;
+                sleepPos = 0.0f;
+                sleepVel = 0.0f;
+                sleepOut = 0.0f;
+            }
+        } else {
+            if (canSleep && holdF > 0.0f && holdF < kSleepHold) shoot(); // короткое нажатие — снимок
+            holdF = 0.0f;
+        }
+    } else if (!fDown) {
+        wakeUp(false);
+    } else {
+        const float aggr = clampf(progress * kAggrPerProgress, 0.0f, 1.0f);
+        sleepVel += rng.signedUnit() * (9.0f + 9.0f * aggr) * dt;       // дыхание само сбивается
+        sleepVel += static_cast<float>(in.horizontal()) * kSleepPush * dt;
+        sleepVel *= std::exp(-1.6f * dt);
+        sleepPos += sleepVel * dt;
+        if (sleepPos < -1.0f || sleepPos > 1.0f) {
+            sleepPos = clampf(sleepPos, -1.0f, 1.0f);
+            sleepVel = 0.0f;
+        }
+        if (std::fabs(sleepPos) <= kSleepZone) {
+            sleepOut = 0.0f;
+            monster.reduceThreat(kSleepCalm * dt);
+            if (facelessStarted) facelessT = std::max(0.0f, facelessT - dt / kFacelessTurn);
+        } else {
+            sleepOut += dt;
+            if (sleepOut >= kSleepGrace) wakeUp(true);
+        }
+    }
+    sleepEyes = approach(sleepEyes, sleeping ? 1.0f : 0.0f, dt * 3.0f);
+}
+
+void Game::State::wakeUp(bool caught) {
+    sleeping = false;
+    holdF = 0.0f;
+    if (!caught) return;
+    // Тебя заметили: гость возвращается быстрее, родители снова смотрят на тебя.
+    sleepCooldown = kSleepCooldown;
+    monster.attract(6.0f);
+    if (facelessStarted) facelessT = 1.0f;
+    scene.addShake(0.4f);
+    audio.play(Sfx::MonsterGrowl, 0.9f);
+}
+
+// ---- Достижения, которые проверяются по ходу поездки ----
+void Game::State::trackAchievements(float dt) {
+    maxThreat = std::max(maxThreat, monster.threat());
+    if (fuel >= kFuelMax - 0.01f) ach.unlock(Ach::FullTank);
+    if (mini.fuelCollected() >= 30) ach.unlock(Ach::Cans30);
+    if (mini.crashes() >= 20) ach.unlock(Ach::Crashes20);
+    if (hits >= 10) ach.unlock(Ach::Hits10);
+    consoleRunT = view == ViewMode::Console ? consoleRunT + dt : 0.0f;
+    if (consoleRunT >= kConsoleStreak) ach.unlock(Ach::Console60);
+}
+
+void Game::State::onTripWon() {
+    ach.unlock(Ach::WinAny);
+    const Ach byLevel[] = {Ach::WinEasy, Ach::WinNormal, Ach::WinHard};
+    ach.unlock(byLevel[clampi(difficulty, 0, 2)]);
+    if (photos > 0 && photos == hits) ach.unlock(Ach::PerfectAim);
+    if (mini.crashes() == 0) ach.unlock(Ach::CleanRun);
+    if (maxThreat >= 90.0f) ach.unlock(Ach::CloseCall);
+    ach.addWin();
+}
+
+// Всплывающие «ДОСТИЖЕНИЕ»: по одному, не во время скримера.
+void Game::State::updatePopup(float dt) {
+    popupT = std::min(popupT + dt, kPopupTime);
+    if (popupT < kPopupTime || state == GameState::Dying) return;
+    if (ach.takeUnlocked(popupAch)) {
+        popupT = 0.0f;
+        audio.play(Sfx::MenuSelect, 0.8f, 0.0f, 1.25f);
     }
 }
 
@@ -1186,8 +1436,12 @@ void Game::State::updateAmbient(float dt) {
             master = 0.45f;
         } else {
             music = state == GameState::Playing ? 0.55f : 0.0f;
-            heart = smoothstep(35.0f, 100.0f, threat);
+            heart = std::max(smoothstep(35.0f, 100.0f, threat), 0.55f * sleepEyes);
             if (monster.onRoof()) dread = 0.45f + 0.55f * smoothstep(0.0f, 60.0f, threat);
+            if (facelessT > 0.0f) { // родители обернулись: музыка консоли стихает, гул растёт
+                music *= 1.0f - facelessT;
+                dread = std::max(dread, 0.6f + 0.4f * facelessT);
+            }
         }
         break;
     }
@@ -1220,7 +1474,7 @@ void Game::State::updateAmbient(float dt) {
     p.heartbeat = ambHeart;
     p.consoleMuffle = 1.0f - raiseEased();
     p.musicTempo = 1.0f + 0.25f * progress;
-    p.master = ambMaster;
+    p.master = ambMaster * userVolume;
     audio.setAmbient(p);
 }
 
@@ -1248,6 +1502,9 @@ RealWorldView Game::State::makeView(bool hud) const {
     v.showHud = hud;
     v.showConsole = true;
     v.consoleDpad = 0;
+    v.endless = endlessTrip;
+    v.kmDriven = kmDriven;
+    v.facelessTurn = facelessT;
     return v;
 }
 
@@ -1292,8 +1549,8 @@ void Game::State::renderMenu(Canvas& out) {
         {T8("TAB/ПРОБЕЛ/ПКМ"), T8("консоль: вверх/вниз")},
         {T8("A D / < >"), T8("руль в мини-игре")},
         {T8("A W D S / мышь"), T8("камера: выбор окна")},
-        {T8("F / E / ЛКМ"), T8("снимок со вспышкой")},
-        {T8("ESC / M / F11"), T8("пауза / звук / экран")},
+        {T8("F / ЛКМ"), T8("снимок со вспышкой")},
+        {T8("ESC / M / E"), T8("пауза/звук/громкость")},
     };
     const int split = px + 98;
     int ry = py + 17;
@@ -1305,8 +1562,9 @@ void Game::State::renderMenu(Canvas& out) {
 
     // ---- Сложность ----
     {
-        char line[64];
-        std::snprintf(line, sizeof(line), "%s  < %s >", T8("СЛОЖНОСТЬ:"), diff().name);
+        char line[128];
+        std::snprintf(line, sizeof(line), "%s  < %s >%s", T8("СЛОЖНОСТЬ:"), diff().name,
+                      endless ? T8("  + БЕСКОНЕЧНАЯ ДОРОГА") : "");
         const uint32_t col = difficulty == 2 ? rgb(214, 96, 90) : (difficulty == 0 ? rgb(150, 196, 150) : kKeyColor);
         textCentered(out, 160, 141, line, col);
     }
@@ -1319,7 +1577,83 @@ void Game::State::renderMenu(Canvas& out) {
     const int bx = 160 - (w1 + gap + w2) / 2, by = 153;
     hud::drawKeyHint(out, bx, by, "ENTER", T8("НАЧАТЬ"), 0.55f + 0.45f * pulse);
     hud::drawKeyHint(out, bx + w1 + gap, by, "ESC", T8("ВЫХОД"), 0.7f);
-    if (toastT >= kToastTime) textCentered(out, 160, 168, T8("Лучше играть в наушниках"), rgb(84, 80, 92));
+    if (toastT >= kToastTime) {
+        char achLabel[64];
+        std::snprintf(achLabel, sizeof(achLabel), "%s %d/%d", T8("ДОСТИЖЕНИЯ"), ach.unlockedCount(), kAchCount);
+        const int w3 = keyHintWidth("TAB", achLabel);
+        hud::drawKeyHint(out, 160 - w3 / 2, 167, "TAB", achLabel, 0.6f);
+    }
+    if (achScreen) renderAchievements(out);
+}
+
+// Список достижений поверх меню: две колонки, описание выбранного внизу.
+void Game::State::renderAchievements(Canvas& out) const {
+    out.blendRect(0, 0, kW, kH, rgb(0, 0, 0), 0.6f);
+    hud::drawPanel(out, 6, 4, 308, 172, 0.92f);
+    char title[64];
+    std::snprintf(title, sizeof(title), "%s  %d/%d", T8("ДОСТИЖЕНИЯ"), ach.unlockedCount(), kAchCount);
+    textCentered(out, 160, 9, title, kKeyColor);
+    const int rows = (kAchCount + 1) / 2;
+    for (int i = 0; i < kAchCount; ++i) {
+        const Ach a = static_cast<Ach>(i);
+        const AchievementInfo& inf = Achievements::info(a);
+        const bool got = ach.has(a);
+        const int x = 14 + (i / rows) * 150;
+        const int y = 22 + (i % rows) * 9;
+        if (i == achCursor) out.blendRect(x - 3, y - 1, 146, 9, rgb(120, 110, 150), 0.35f);
+        font::drawText(out, x, y, got ? "+" : "-", got ? rgb(140, 210, 140) : rgb(70, 66, 80));
+        const char* name = (!got && inf.secret) ? "???" : inf.title;
+        font::drawTextShadow(out, x + 9, y, name, got ? hud::kText : rgb(96, 92, 106), hud::kShadow);
+    }
+    const AchievementInfo& sel = Achievements::info(static_cast<Ach>(achCursor));
+    const bool selGot = ach.has(static_cast<Ach>(achCursor));
+    const char* desc = (!selGot && sel.secret) ? T8("Секретное достижение.") : sel.desc;
+    out.fillRect(14, 142, 292, 1, rgb(60, 56, 72));
+    textCentered(out, 160, 147, desc, selGot ? rgb(170, 220, 170) : hud::kTextDim);
+    const int w = keyHintWidth("ESC", T8("НАЗАД"));
+    hud::drawKeyHint(out, 160 - w / 2, 161, "ESC", T8("НАЗАД"), 0.8f);
+}
+
+// Веки смыкаются сверху и снизу; когда глаза закрыты — шкала дыхания.
+void Game::State::renderSleep(Canvas& out) const {
+    if (endlessTrip && !sleeping && tripTime < 9.0f && state == GameState::Playing) {
+        const float a = saturate(std::min(tripTime / 0.5f, (9.0f - tripTime) / 0.6f));
+        textBanner(out, 160, 73, T8("ДЕРЖИ F - ПРИТВОРИТЬСЯ СПЯЩИМ"), rgb(200, 190, 220), a);
+    }
+    if (sleepEyes <= 0.0f) return;
+    const float open = 90.0f * (1.0f - 0.97f * smoothstep(0.0f, 1.0f, sleepEyes));
+    for (int y = 0; y < kH; ++y) {
+        const float d = std::fabs(static_cast<float>(y) + 0.5f - 90.0f) - open; // > 0 — под веком
+        if (d <= -8.0f) continue;
+        const float k = d >= 0.0f ? 1.0f : 1.0f - (-d / 8.0f);
+        out.blendRect(0, y, kW, 1, rgb(2, 1, 3), 0.97f * k);
+    }
+    if (!sleeping) return;
+    const bool inZone = std::fabs(sleepPos) <= kSleepZone;
+    const int bx = 90, bw = 140, by = 148;
+    textCentered(out, 160, by - 13, T8("ДЫШИ РОВНО: A / D"), inZone ? rgb(150, 200, 150) : rgb(220, 110, 100));
+    out.fillRect(bx - 1, by - 1, bw + 2, 10, rgb(40, 36, 48));
+    out.fillRect(bx, by, bw, 8, rgb(14, 12, 18));
+    const int zw = roundi(kSleepZone * static_cast<float>(bw) * 0.5f);
+    out.fillRect(160 - zw, by, 2 * zw, 8, inZone ? rgb(40, 120, 60) : rgb(30, 80, 40));
+    const int mx = 160 + roundi(sleepPos * static_cast<float>(bw) * 0.5f);
+    const bool blink = !inZone && static_cast<int>(animTime * 10.0f) % 2 == 0;
+    out.fillRect(mx - 1, by - 3, 3, 14, blink ? rgb(230, 60, 50) : rgb(230, 226, 214));
+}
+
+// «ДОСТИЖЕНИЕ ПОЛУЧЕНО» — выезжает сверху по центру и уезжает обратно.
+void Game::State::renderPopup(Canvas& out) const {
+    if (popupT >= kPopupTime) return;
+    const float in = smoothstep(0.0f, 0.3f, popupT);
+    const float outK = smoothstep(kPopupTime - 0.4f, kPopupTime, popupT);
+    const int slide = roundi(-26.0f * (1.0f - in) - 26.0f * outK);
+    const char* name = Achievements::info(popupAch).title;
+    const int w = std::max(font::textWidth(name), font::textWidth(T8("ДОСТИЖЕНИЕ ПОЛУЧЕНО"))) + 20;
+    const int x = 160 - w / 2, y = 3 + slide;
+    hud::drawPanel(out, x, y, w, 22, 0.9f);
+    out.fillRect(x + 1, y + 1, w - 2, 1, kKeyColor);
+    textCentered(out, 160, y + 4, T8("ДОСТИЖЕНИЕ ПОЛУЧЕНО"), kKeyColor);
+    textCentered(out, 160, y + 13, name, hud::kText);
 }
 
 void Game::State::renderIntro(Canvas& out) {
@@ -1517,12 +1851,16 @@ void Game::State::renderResult(Canvas& out, bool victory) {
     char val[6][40];
     const int secs = static_cast<int>(tripTime);
     std::snprintf(val[0], sizeof(val[0]), "%d:%02d", secs / 60, secs % 60);
-    std::snprintf(val[1], sizeof(val[1]), "%.1f %s %.1f %s", static_cast<double>(progress * kTripKm), T8("ИЗ"),
-                  static_cast<double>(kTripKm), T8("КМ"));
+    if (endlessTrip) {
+        std::snprintf(val[1], sizeof(val[1]), "%.1f %s", static_cast<double>(kmDriven), T8("КМ"));
+    } else {
+        std::snprintf(val[1], sizeof(val[1]), "%.1f %s %.1f %s", static_cast<double>(progress * kTripKm), T8("ИЗ"),
+                      static_cast<double>(kTripKm), T8("КМ"));
+    }
     std::snprintf(val[2], sizeof(val[2]), "%d", mini.fuelCollected());
     std::snprintf(val[3], sizeof(val[3]), "%d (%s %d)", photos, T8("В ЦЕЛЬ"), hits);
     std::snprintf(val[4], sizeof(val[4]), "%d", mini.crashes());
-    std::snprintf(val[5], sizeof(val[5]), "%s", diff().name);
+    std::snprintf(val[5], sizeof(val[5]), "%s%s", diff().name, endlessTrip ? T8(" + ДОРОГА") : "");
     const char* labels[6] = {T8("Время в пути"), T8("Проехали"), T8("Канистры"), T8("Снимки"),
                              T8("Аварии в игре"), T8("Сложность")};
     int ry = py + 8;
@@ -1546,12 +1884,15 @@ void Game::State::renderResult(Canvas& out, bool victory) {
 // «Звук вкл/выкл»: в реальном мире — под люком; в меню и с консолью у лица — внизу,
 // чтобы не закрывать ни заголовок, ни экран мини-игры.
 void Game::State::renderToast(Canvas& out) const {
-    if (toastT >= kToastTime || state == GameState::Paused) return; // в паузе это видно на панели
+    if (toastT >= kToastTime || (state == GameState::Paused && !toastVolume)) return; // вкл/выкл видно на панели
     const float a = saturate(std::min(toastT / 0.15f, (kToastTime - toastT) / 0.4f));
     const bool consoleUp = (state == GameState::Playing || state == GameState::Arriving) && raiseEased() >= 0.5f;
     const int y = state == GameState::Menu || consoleUp ? 167 : 40;
     const int cx = consoleUp ? 198 : 160;
-    textBanner(out, cx, y, toastMuted ? T8("ЗВУК ВЫКЛЮЧЕН") : T8("ЗВУК ВКЛЮЧЁН"), hud::kText, a);
+    char vol[48];
+    std::snprintf(vol, sizeof(vol), "%s %d%%", T8("ГРОМКОСТЬ"), roundi(userVolume * 100.0f));
+    const char* msg = toastVolume ? vol : (toastMuted ? T8("ЗВУК ВЫКЛЮЧЕН") : T8("ЗВУК ВКЛЮЧЁН"));
+    textBanner(out, cx, y, msg, hud::kText, a);
 }
 
 // ============================================================================
@@ -1577,7 +1918,15 @@ void Game::update(float dt, const Input& input) {
         s.audio.setMuted(m);
         if (!m) s.audio.play(Sfx::MenuMove);
         s.toastMuted = m;
+        s.toastVolume = false;
         s.toastT = 0.0f;
+    }
+    // E — громкость +10% по кругу (после 100% снова 10%).
+    if (input.pressed(Key::E)) {
+        s.userVolume = s.userVolume >= 0.999f ? kVolumeStep : std::min(1.0f, s.userVolume + kVolumeStep);
+        s.toastVolume = true;
+        s.toastT = 0.0f;
+        s.audio.play(Sfx::MenuMove, 0.7f);
     }
     if (input.pressed(Key::F11)) s.fullscreenReq = true;
 
@@ -1594,6 +1943,7 @@ void Game::update(float dt, const Input& input) {
     case GameState::Victory: s.updateResult(dt, input, accept); break;
     }
     s.toastT = std::min(s.toastT + dt, kToastTime);
+    s.updatePopup(dt);
     s.updateFade(dt);
     s.updateAmbient(dt);
 }
@@ -1624,7 +1974,9 @@ void Game::render(Canvas& out) {
     case GameState::GameOver: s.renderGameOver(out); break;
     case GameState::Victory: s.renderVictory(out); break;
     }
+    if (s.state == GameState::Playing || s.state == GameState::Paused) s.renderSleep(out);
     s.renderToast(out);
+    s.renderPopup(out);
 
     // Вспышка камеры: один белый кадр и быстрое затухание (без стробоскопа).
     if (s.flashT < s.flashDur) {
@@ -1637,6 +1989,8 @@ void Game::render(Canvas& out) {
     out.resetStencilModes();
     out.setOffset(0, 0);
 }
+
+void Game::setSaveFile(const std::filesystem::path& file) { st_->ach.setSaveFile(file); }
 
 void Game::onFocusLost() {
     State& s = *st_;

@@ -29,6 +29,9 @@ void drawFuelGauge(Canvas& c, int x, int y, float fuel01, bool blink, float time
 // Шкала пути до дома с подписью «ДОМ x.x КМ». Ширина w, высота ~14.
 void drawTripBar(Canvas& c, int x, int y, int w, float progress01, float kmLeft);
 
+// Бесконечный режим: «ДОРОГА ∞» и пройденные километры вместо пути до дома.
+void drawEndlessBar(Canvas& c, int x, int y, int w, float kmDriven, float time);
+
 // Шкала угрозы (вертикальная или горизонтальная по ситуации).
 // Пульсирует при высоких значениях. ~70x14.
 void drawThreatBar(Canvas& c, int x, int y, float threat01, float time);

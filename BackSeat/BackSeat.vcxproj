@@ -191,6 +191,7 @@
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\Audio.cpp" />
     <ClCompile Include="src\Synth.cpp" />
+    <ClCompile Include="src\Achievements.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Common.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="src\Input.h" />
     <ClInclude Include="src\Audio.h" />
     <ClInclude Include="src\Synth.h" />
+    <ClInclude Include="src\Achievements.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

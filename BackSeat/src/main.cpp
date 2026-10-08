@@ -50,6 +50,7 @@ int runGame() {
     Canvas frame(cfg::kScreenW, cfg::kScreenH);
     {
         Game game(audio);
+        game.setSaveFile(platform.saveFilePath());
 
         const double dt = cfg::kFixedDt;
         double previous = platform.now();

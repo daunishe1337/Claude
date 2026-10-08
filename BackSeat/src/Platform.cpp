@@ -382,6 +382,21 @@ double Platform::now() const {
     return static_cast<double>(t.QuadPart - impl_->start.QuadPart) / static_cast<double>(impl_->freq.QuadPart);
 }
 
+std::filesystem::path Platform::saveFilePath() const {
+    // Длинные пути на всякий случай: буфер растёт, пока путь не поместится.
+    std::vector<wchar_t> buf(MAX_PATH);
+    for (int attempt = 0; attempt < 6; ++attempt) {
+        const DWORD n = GetModuleFileNameW(nullptr, buf.data(), static_cast<DWORD>(buf.size()));
+        if (n == 0) return {};
+        if (n < buf.size()) {
+            std::filesystem::path exe(std::wstring(buf.data(), n));
+            return exe.parent_path() / L"backseat_save.txt";
+        }
+        buf.resize(buf.size() * 2);
+    }
+    return {};
+}
+
 void Platform::sleepMs(int ms) const {
     if (ms > 0) Sleep(static_cast<DWORD>(ms));
 }

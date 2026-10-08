@@ -103,6 +103,13 @@ const char* const kCarMarker[] = { // машинка-отметка на шка�
     "11111",
     ".2.2.",
 };
+const char* const kInfinityIcon[] = { // знак бесконечности 9x5 (в шрифте его нет)
+    ".11...11.",
+    "1..1.1..1",
+    "1...1...1",
+    "1..1.1..1",
+    ".11...11.",
+};
 // clang-format on
 
 template <size_t N>
@@ -261,6 +268,73 @@ void drawTripBar(Canvas& c, int x, int y, int w, float progress01, float kmLeft)
     const auto housePal =
         iconPalette(rgb(70, 82, 110), rgb(28, 30, 44), rgb(255, 196, 96), rgb(150, 110, 70));
     c.drawSprite(kHouseIcon, rowsOf(kHouseIcon), x + w - 9, y + 6, housePal.data());
+}
+
+// ---------------------------------------------------------------------------
+//  Бесконечный режим: ДОРОГА ∞
+//                     [ - - -🚗- - - - ]   (разметка бежит без конца)
+//                                12.4 КМ
+//  Дома в конце шкалы нет: оба края растворяются в темноте. Изредка одна
+//  цифра счётчика на долю секунды «сбивается» — дорога будто повторяется.
+// ---------------------------------------------------------------------------
+void drawEndlessBar(Canvas& c, int x, int y, int w, float kmDriven, float time) {
+    w = std::max(w, 24);
+    const float km = std::max(0.0f, kmDriven);
+    font::drawTextShadow(c, x, y + 1, T8("ДОРОГА"), kText, kShadow);
+    // Знак бесконечности после подписи; медленно «дышит».
+    const int ix = x + font::textWidth(T8("ДОРОГА")) + 3;
+    const float breathe = 0.5f + 0.5f * std::sin(time * 1.3f);
+    c.drawSpriteSolid(kInfinityIcon, rowsOf(kInfinityIcon), ix + 1, y + 3, kShadow);
+    c.drawSpriteSolid(kInfinityIcon, rowsOf(kInfinityIcon), ix, y + 2,
+                      lerpColor(scaleColor(kTrip, 0.7f), kTrip, breathe));
+
+    // Дорога-шкала во всю ширину: разметка ползёт влево вместе с пройденным
+    // путём, машинка стоит на месте.
+    const int by = y + 11;
+    c.blendRect(x, by - 1, w, 4, kShadow, 0.85f);
+    c.fillRect(x, by, w, 2, kBarEmpty);
+    const int scroll = static_cast<int>(std::fmod(km * 420.0f, 6.0f));
+    for (int i = 0; i < w; ++i) {
+        if (((i + scroll) % 6) < 3) c.plot(x + i, by, scaleColor(kTrip, 0.62f));
+    }
+    // Края уходят в темноту (упорядоченный дизеринг по 8 пикселей).
+    for (int i = 0; i < 8; ++i) {
+        const float a = 1.0f - static_cast<float>(i) / 8.0f;
+        c.blendRect(x + i, by - 1, 1, 4, kShadow, a);
+        c.blendRect(x + w - 1 - i, by - 1, 1, 4, kShadow, a);
+    }
+    const auto carPal = iconPalette(kText, kShadow, kText, kText);
+    c.drawSprite(kCarMarker, rowsOf(kCarMarker), x + w - 24, by - 2, carPal.data());
+
+    // Пройденные километры (по правому краю, под шкалой).
+    char buf[32];
+    if (km < 99.95f) std::snprintf(buf, sizeof(buf), "%.1f", static_cast<double>(km));
+    else std::snprintf(buf, sizeof(buf), "%d", std::min(99999, static_cast<int>(km)));
+    // Сбой: в редкий отрезок времени одна цифра подменяется другой.
+    const uint32_t slot = static_cast<uint32_t>(std::max(0.0f, time) * 9.0f);
+    uint32_t hsh = slot * 2654435761u;
+    hsh ^= hsh >> 15;
+    hsh *= 2246822519u;
+    hsh ^= hsh >> 13;
+    int glitchAt = -1;
+    if ((hsh & 63u) == 7u) {
+        const int len = static_cast<int>(std::strlen(buf));
+        const int pick = static_cast<int>((hsh >> 8) % static_cast<uint32_t>(std::max(1, len)));
+        if (buf[pick] >= '0' && buf[pick] <= '9') {
+            buf[pick] = static_cast<char>('0' + static_cast<int>(((buf[pick] - '0') + 1 + ((hsh >> 16) % 8u)) % 10));
+            glitchAt = pick;
+        }
+    }
+    const char* unit = T8(" КМ");
+    const int numW = font::textWidth(buf), unitW = font::textWidth(unit);
+    const int tx = x + w - (numW + 1) - unitW;
+    const int ty = y + 16;
+    for (int i = 0; buf[i] != 0; ++i) {
+        const char d[2] = {buf[i], 0};
+        const uint32_t col = i == glitchAt ? rgb(196, 92, 84) : kText;
+        font::drawTextShadow(c, tx + i * font::kAdvance, ty, d, col, kShadow);
+    }
+    font::drawTextShadow(c, tx + numW + 1, ty, unit, kTextDim, kShadow);
 }
 
 // ---------------------------------------------------------------------------
