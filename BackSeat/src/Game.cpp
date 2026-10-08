@@ -555,6 +555,7 @@ struct Game::State {
     bool cheatFuel = false;
     bool cheatAutopilot = false;
     bool cheatCamera = false;
+    bool cheatedTrip = false;   // в этой поездке работали читы (метка на экране итогов)
     bool anyCheat() const { return cheatAutoSleep || cheatGod || cheatFuel || cheatAutopilot || cheatCamera; }
 
     // ---- Достижения ----
@@ -815,6 +816,7 @@ void Game::State::startTrip(uint32_t seed) {
     hitStreak = 0;
     gotBattery = false;
     gotLock = false;
+    cheatedTrip = false;
     ach.unlock(Ach::FirstTrip);
     ambDread = 0.0f;
     ambHeart = 0.0f;
@@ -1513,6 +1515,7 @@ void Game::State::updateAdmin(float dt, const Input& in) {
 
 void Game::State::applyAdmin(AdminItem item) {
     const bool trip = state == GameState::Playing || state == GameState::Paused;
+    if (trip && item != AdminItem::Endless) cheatedTrip = true; // любое вмешательство в поездку
     adminMsg = "";
     switch (item) {
     case AdminItem::AutoSleep: cheatAutoSleep = !cheatAutoSleep; break;
@@ -1559,6 +1562,7 @@ void Game::State::applyAdmin(AdminItem item) {
 
 // Постоянные читы — каждый тик поездки.
 void Game::State::applyCheats() {
+    if (anyCheat()) cheatedTrip = true;
     if (cheatFuel) fuel = kFuelMax;
     if (cheatCamera) {
         hasCamera = true;
@@ -1825,6 +1829,7 @@ void Game::State::renderMenu(Canvas& out) {
         const int w3 = keyHintWidth("TAB", achLabel);
         hud::drawKeyHint(out, 160 - w3 / 2, 167, "TAB", achLabel, 0.6f);
     }
+    if (anyCheat()) font::drawTextShadow(out, 4, 4, T8("ADMIN: ЧИТЫ ВКЛЮЧЕНЫ (INS)"), rgb(220, 70, 70), hud::kShadow);
     if (achScreen) renderAchievements(out);
 }
 
@@ -2136,6 +2141,7 @@ void Game::State::renderResult(Canvas& out, bool victory) {
     font::drawText(out, 160 - tw / 2 + 2, 10, title, rgb(4, 2, 4), 2);
     font::drawText(out, 160 - tw / 2, 8, title, titleCol, 2);
     textBanner(out, 160, 31, reason, victory ? hud::kText : rgb(226, 200, 194), a);
+    if (cheatedTrip) textCentered(out, 160, 45, T8("ADMIN: ПОЕЗДКА С ЧИТАМИ"), scaleColor(rgb(220, 70, 70), a));
 
     const int pw = 216, ph = 96;
     const int px = 160 - pw / 2, py = 82;
