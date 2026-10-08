@@ -6,6 +6,8 @@
 //      0100110...   — 25 символов '0'/'1', по порядку Ach
 //      <попаданий всего>
 //      <доездов всего>
+//      <проигрышей всего>
+//  Старый файл с меньшим числом достижений тоже читается (остальные — не получены).
 //  Повреждённый или чужой файл игнорируется (прогресс начинается заново).
 // ============================================================================
 #include "Achievements.h"
@@ -46,6 +48,21 @@ const AchievementInfo kInfo[kAchCount] = {
     {T8("Дальнобойщик"), T8("Проехать 15 км по бесконечной дороге."), true},
     {T8("Постоянный пассажир"), T8("Доехать до дома 5 раз."), false},
     {T8("Не отрываясь"), T8("Минуту подряд не опускать консоль."), false},
+    {T8("Притворщик"), T8("Притвориться спящим на бесконечной дороге."), true},
+    {T8("Крепкий сон"), T8("30 секунд подряд дышать ровно во \"сне\"."), true},
+    {T8("Подслушано"), T8("Подслушать, о чём говорят, пока ты \"спишь\"."), true},
+    {T8("Шёпот"), T8("Услышать, что шепчут безликие."), true},
+    {T8("Тебя заметили"), T8("Сбиться с дыхания, притворяясь спящим."), true},
+    {T8("Колыбельная"), T8("Прогнать гостя с крыши, притворившись спящим."), true},
+    {T8("Марафон"), T8("10 минут на бесконечной дороге."), true},
+    {T8("Полсотни"), T8("Проехать 50 км по бесконечной дороге."), true},
+    {T8("Серия"), T8("5 попаданий вспышкой подряд без промаха."), false},
+    {T8("Запасливый"), T8("Камера, батарейка и замок за одну поездку."), false},
+    {T8("Ни царапины"), T8("Доехать, когда угроза не превышала 20%."), false},
+    {T8("Тишина в салоне"), T8("Доехать с выключенным звуком."), false},
+    {T8("Шёпотом"), T8("Убавить громкость до 10%."), false},
+    {T8("Упрямство"), T8("Проиграть 5 раз."), false},
+    {T8("Лицом к лицу"), T8("Сверкнуть вспышкой в лица родителей."), true},
 };
 
 } // namespace
@@ -90,6 +107,12 @@ void Achievements::addHits(int n) {
     save();
 }
 
+void Achievements::addLoss() {
+    ++totalLosses_;
+    if (totalLosses_ >= 5) unlock(Ach::Stubborn);
+    save();
+}
+
 void Achievements::addWin() {
     ++totalWins_;
     if (totalWins_ >= 5) unlock(Ach::Wins5);
@@ -108,13 +131,17 @@ void Achievements::load() {
     std::ifstream in(file_);
     if (!in) return;
     std::string header, bits;
-    int hits = 0, wins = 0;
+    int hits = 0, wins = 0, losses = 0;
     if (!std::getline(in, header) || header != kHeader) return;
-    if (!std::getline(in, bits) || static_cast<int>(bits.size()) < kAchCount) return;
+    if (!std::getline(in, bits)) return;
     if (!(in >> hits >> wins)) return;
-    for (int i = 0; i < kAchCount; ++i) unlocked_[static_cast<size_t>(i)] = bits[static_cast<size_t>(i)] == '1';
+    if (!(in >> losses)) losses = 0; // в старых файлах счётчика проигрышей нет
+    // Старый файл мог знать меньше достижений: читаем сколько есть.
+    const size_t n = std::min(bits.size(), static_cast<size_t>(kAchCount));
+    for (size_t i = 0; i < n; ++i) unlocked_[i] = bits[i] == '1';
     totalHits_ = std::max(0, hits);
     totalWins_ = std::max(0, wins);
+    totalLosses_ = std::max(0, losses);
 }
 
 void Achievements::save() const {
@@ -123,5 +150,5 @@ void Achievements::save() const {
     if (!out) return; // нет прав на запись — прогресс останется в памяти
     out << kHeader << '\n';
     for (bool u : unlocked_) out << (u ? '1' : '0');
-    out << '\n' << totalHits_ << '\n' << totalWins_ << '\n';
+    out << '\n' << totalHits_ << '\n' << totalWins_ << '\n' << totalLosses_ << '\n';
 }

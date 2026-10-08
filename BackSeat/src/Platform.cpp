@@ -71,8 +71,20 @@ bool mapKey(WPARAM vk, Key& out) {
     case VK_RETURN: out = Key::Enter; return true;
     case VK_ESCAPE: out = Key::Escape; return true;
     case VK_F11: out = Key::F11; return true;
-    default: return false;
+    case VK_INSERT: out = Key::Insert; return true;
+    case VK_BACK: out = Key::Backspace; return true;
+    default: break;
     }
+    // Цифры: основной ряд и цифровой блок.
+    if (vk >= '0' && vk <= '9') {
+        out = static_cast<Key>(static_cast<int>(Key::Digit0) + static_cast<int>(vk - '0'));
+        return true;
+    }
+    if (vk >= VK_NUMPAD0 && vk <= VK_NUMPAD9) {
+        out = static_cast<Key>(static_cast<int>(Key::Digit0) + static_cast<int>(vk - VK_NUMPAD0));
+        return true;
+    }
+    return false;
 }
 
 } // namespace

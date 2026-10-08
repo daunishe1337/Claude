@@ -30,6 +30,18 @@ enum class Key : int {
     Enter,
     Escape,
     F11,
+    Insert,    // админ-панель
+    Backspace,
+    Digit0,    // цифры (основной ряд и цифровой блок) — подряд, Digit0..Digit9
+    Digit1,
+    Digit2,
+    Digit3,
+    Digit4,
+    Digit5,
+    Digit6,
+    Digit7,
+    Digit8,
+    Digit9,
     Count
 };
 

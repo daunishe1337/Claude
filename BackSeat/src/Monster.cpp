@@ -602,6 +602,12 @@ void Monster::attract(float seconds) {
     if (s.timer > kAttractFloor) s.timer = std::max(kAttractFloor, s.timer - seconds);
 }
 
+void Monster::delay(float seconds) {
+    State& s = *st_;
+    if (s.state != MonsterState::Dormant || !(seconds > 0.0f)) return;
+    s.timer = std::min(s.timer + seconds, 1.0e6f);
+}
+
 void Monster::reduceThreat(float amount) {
     State& s = *st_;
     if (s.state == MonsterState::Entered || !(amount > 0.0f)) return;

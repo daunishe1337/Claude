@@ -647,18 +647,33 @@ const Reaction kEndlessLoop[] = {
     {{dad(T8("Не спишь? Мы эту табличку уже проезжали?"), To::Kid),
       mom(T8("Не впутывай ребёнка. Едем и едем."))}},
 };
-// Ребёнок «уснул» (притворяется): при «спящем» родители говорят тише и откровеннее.
+// Ребёнок «уснул» (притворяется): стоит закрыть глаза — родители становятся странными.
 const Reaction kKidAsleep[] = {
-    {{mom(T8("Солнышко уснуло.")), dad(T8("Наконец-то. Давай потише."))}},
-    {{dad(T8("Спит?")), mom(T8("Спит. Теперь можно говорить нормально."))}},
-    {{mom(T8("Тише, солнышко спит.")), dad(T8("Да я и так шёпотом."))}},
-    {{dad(T8("Спит наш пассажир.")), mom(T8("Пусть спит. Ещё ехать и ехать."))}},
-    {{mom(T8("Уснуло. Хоть не слышит, как мы ругаемся.")), dad(T8("Мы не ругаемся. Мы обсуждаем."))}},
-    {{dad(T8("Спит? Тогда скажу. Я заблудился.")), mom(T8("Я знаю. Я давно знаю."))}},
-    {{mom(T8("Раз спит... Ты правда не знаешь, где мы?")), dad(T8("Знаю. Почти знаю."))}},
-    {{dad(T8("Пока спит: я этой дороги не помню.")), mom(T8("И я. Её не было на карте."))}},
-    {{mom(T8("Спит. Ты видел, что там в окне?")), dad(T8("Ничего там нет. Отражение."))}},
-    {{dad(T8("Уснуло. Можно я хоть музыку включу?")), mom(T8("Только тихо. И не свою."))}},
+    {{mom(T8("Уснуло.")), dad(T8("Хорошо. Можно больше не притворяться."))}},
+    {{dad(T8("Спит?")), mom(T8("Проверь, дышит ли."))}},
+    {{mom(T8("Наконец-то.")), dad(T8("Теперь можно снять лица."))}},
+    {{dad(T8("Спит.")), mom(T8("Как в прошлый раз?")), dad(T8("Как каждый раз."))}},
+    {{mom(T8("Уснуло. Сколько ещё кругов?")), dad(T8("Сколько понадобится."))}},
+    {{dad(T8("Тсс. Не разбуди.")), mom(T8("Не проснётся. Не в этот раз."))}},
+    {{mom(T8("Спит. Можешь повернуться.")), dad(T8("Ещё рано."))}},
+    {{dad(T8("Посмотри, как дышит.")), mom(T8("Почти как настоящее."))}},
+    {{mom(T8("Солнышко спит...")), dad(T8("Солнышко. Ну да. Пусть так."))}},
+    {{dad(T8("Уснуло?")), mom(T8("Да. Выключай улыбку."))}},
+};
+// Пока ребёнок «спит» — странные разговоры вместо обычной ссоры.
+const Reaction kAsleepTalk[] = {
+    {{dad(T8("Дорога снова пошла по кругу.")), mom(T8("Она всегда шла по кругу."))}},
+    {{mom(T8("Ты помнишь, как мы сюда сели?")), dad(T8("Нет. А ты?"))}},
+    {{dad(T8("Как зовут ребёнка?")), mom(T8("Не помню. Неважно."))}},
+    {{mom(T8("На крыше кто-то есть.")), dad(T8("Пусть. Он нам не мешает."))}},
+    {{dad(T8("Бензин не кончится.")), mom(T8("Конечно. Его тут и не было."))}},
+    {{mom(T8("Мне нравится эта дорога.")), dad(T8("Мы будем ехать по ней всегда."))}},
+    {{dad(T8("Не смотри назад.")), mom(T8("Я никуда не смотрю. Мне нечем."))}},
+    {{mom(T8("Когда проснётся, улыбайся.")), dad(T8("Помню. Улыбаться."))}},
+    {{dad(T8("Сколько мы уже едем?")), mom(T8("Всегда."))}},
+    {{mom(T8("Тот, на крыше, тоже ждёт.")), dad(T8("Все ждут."))}},
+    {{dad(T8("Слышишь, как дышит?")), mom(T8("Слишком ровно. Притворяется."))}},
+    {{mom(T8("Раньше у меня было лицо.")), dad(T8("У всех было."))}},
 };
 // Безликие шепчут «спящему». Звучит только после silence().
 const Reaction kWhisper[] = {
@@ -701,7 +716,8 @@ const CueInfo kCues[] = {
     {kNearHome, countOf(kNearHome), kNever, 15.0f, 0.10f, 7, true, false},
     {kArrived, countOf(kArrived), kNever, kNever, 0.05f, 10, true, true},
     {kEndlessLoop, countOf(kEndlessLoop), 25.0f, 12.0f, 0.35f, 4, false, false},
-    {kKidAsleep, countOf(kKidAsleep), 30.0f, 4.0f, 0.15f, 3, false, false},
+    {kKidAsleep, countOf(kKidAsleep), 20.0f, 4.0f, 0.15f, 7, false, false},
+    {kAsleepTalk, countOf(kAsleepTalk), 7.0f, 3.0f, 0.10f, 6, false, false},
     {kWhisper, countOf(kWhisper), 5.0f, 3.0f, 0.05f, 9, false, false},
 };
 
@@ -712,7 +728,7 @@ static_assert(countOf(kRoofThud) <= kMaxVariants && countOf(kWindowBang) <= kMax
                   countOf(kCameraFlash) <= kMaxVariants && countOf(kLowFuel) <= kMaxVariants &&
                   countOf(kConsoleCrash) <= kMaxVariants && countOf(kStalling) <= kMaxVariants &&
                   countOf(kNearHome) <= kMaxVariants && countOf(kArrived) <= kMaxVariants &&
-                  countOf(kEndlessLoop) <= kMaxVariants && countOf(kKidAsleep) <= kMaxVariants &&
+                  countOf(kEndlessLoop) <= kMaxVariants && countOf(kKidAsleep) <= kMaxVariants && countOf(kAsleepTalk) <= kMaxVariants &&
                   countOf(kWhisper) <= kMaxVariants,
               "too many reaction variants");
 
@@ -837,6 +853,7 @@ struct Parents::State {
     bool reconcileQueued = false;
     bool finished = false; // приехали: больше не спорят
     bool silenced = false; // silence(): молчат до reset()
+    bool kidAsleep = false; // ребёнок «спит»: ссора не начинается
 
     // Реакции: перезарядка, «один раз», порядок вариантов (перемешан в reset).
     std::array<float, kCueCount> cooldown{};
@@ -925,7 +942,7 @@ void Parents::State::step(float dt) {
     case Phase::Silence:
         if (pending >= 0 && phaseT >= kReactionGap) {
             startReaction();
-        } else if (!finished && !silenced && clock >= nextExchangeAt) {
+        } else if (!finished && !silenced && !kidAsleep && clock >= nextExchangeAt) {
             if (reconcileQueued) {
                 reconcileQueued = false;
                 startExchange(reconcileIdx);
@@ -1310,6 +1327,12 @@ void Parents::silence() {
         }
         if (s.cutAt < 0.0f) s.cutAt = s.phaseT;
     }
+}
+
+void Parents::setKidAsleep(bool asleep) {
+    State& s = *st_;
+    if (asleep && !s.kidAsleep && s.reCue < 0) s.exIdx = -1; // ссору бросают на полуслове
+    s.kidAsleep = asleep;
 }
 
 // ---- Текущая реплика ---------------------------------------------------------------

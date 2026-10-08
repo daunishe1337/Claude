@@ -35,6 +35,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <memory>
 #include <vector>
 
@@ -111,6 +112,8 @@ constexpr float kSleepPush = 7.0f;    // сила A/D
 constexpr float kSleepGrace = 0.7f;   // сколько можно пробыть вне зоны, пока не заметят
 constexpr float kSleepCalm = 4.0f;    // угроза тает, пока дышишь ровно (ед./с)
 constexpr float kSleepCooldown = 2.5f; // после «тебя заметили» глаза не закрыть
+constexpr float kSleepRepel = 1.5f;   // столько ровного «сна» — и гость уходит с крыши
+constexpr float kGlimpseTime = 0.7f;  // открыл глаза — а они смотрят на тебя...
 
 // ---- Громкость (E) ---------------------------------------------------------------
 constexpr float kVolumeStep = 0.1f;
@@ -118,6 +121,26 @@ constexpr float kVolumeStep = 0.1f;
 // ---- Достижения ----------------------------------------------------------------
 constexpr float kPopupTime = 3.2f;        // всплывающее «ДОСТИЖЕНИЕ», с
 constexpr float kConsoleStreak = 60.0f;   // «Не отрываясь»: минута с поднятой консолью
+// ---- Админ-панель (INS, пароль 1667) ---------------------------------------------
+const char* const kAdminPassword = "1667";
+constexpr int kAdminMaxDigits = 8;
+enum class AdminItem : int {
+    AutoSleep,   // сам «спит» и дышит ровно (бесконечная дорога)
+    God,         // гость не может пролезть
+    Fuel,        // бак всегда полный
+    Autopilot,   // мини-игра рулит сама
+    Camera,      // камера есть и всегда заряжена
+    AutoWin,     // действие: сразу доехать
+    Banish,      // действие: прогнать гостя
+    Faceless,    // действие: перемотать к безликим (бесконечная дорога)
+    Endless,     // переключить бесконечную дорогу
+    UnlockAll,   // действие: открыть все достижения
+    Count
+};
+constexpr int kAdminItems = static_cast<int>(AdminItem::Count);
+
+constexpr int kAchRows = 13;              // строк в колонке списка достижений
+constexpr int kAchPerPage = 2 * kAchRows; // две колонки на страницу
 
 // ---- Виды и экраны ----------------------------------------------------------------
 constexpr int kW = cfg::kScreenW;
@@ -510,8 +533,29 @@ struct Game::State {
     float sleepVel = 0.0f;
     float sleepOut = 0.0f;      // сколько секунд бегунок вне зелёной зоны
     float sleepCooldown = 0.0f;
+    float sleepSteadyT = 0.0f;  // сколько секунд подряд дыхание в зелёной зоне
+    float overheardT = 0.0f;    // сколько слушали родителей «во сне»
+    float glimpseT = 0.0f;      // родители «застигнуты» обернувшимися (после пробуждения)
+    int hitStreak = 0;          // попадания подряд
+    bool gotBattery = false;    // для «Запасливый»
+    bool gotLock = false;
     float userVolume = 1.0f;    // громкость, выбранная клавишей E (переживает рестарты)
     bool toastVolume = false;   // тост показывает громкость, а не вкл/выкл звука
+
+    // ---- Админ-панель ----
+    bool adminOpen = false;
+    bool adminUnlocked = false;    // пароль введён (до выхода из игры)
+    char adminInput[kAdminMaxDigits + 1] = {};
+    int adminLen = 0;
+    float adminMsgT = 0.0f;        // показ сообщения («неверный пароль» и т.п.)
+    const char* adminMsg = "";
+    int adminCursor = 0;
+    bool cheatAutoSleep = false;
+    bool cheatGod = false;
+    bool cheatFuel = false;
+    bool cheatAutopilot = false;
+    bool cheatCamera = false;
+    bool anyCheat() const { return cheatAutoSleep || cheatGod || cheatFuel || cheatAutopilot || cheatCamera; }
 
     // ---- Достижения ----
     Achievements ach;
@@ -559,6 +603,10 @@ struct Game::State {
     void trackAchievements(float dt);
     void onTripWon();
     void updatePopup(float dt);
+    void updateAdmin(float dt, const Input& in);
+    void applyAdmin(AdminItem item);
+    void applyCheats();
+    int autopilotSteer() const;
 
     // ---- Механики ----
     void handleAim(const Input& in);
@@ -596,6 +644,7 @@ struct Game::State {
     void renderAchievements(Canvas& out) const;
     void renderPopup(Canvas& out) const;
     void renderSleep(Canvas& out) const;
+    void renderAdmin(Canvas& out) const;
 };
 
 // ============================================================================
@@ -760,6 +809,12 @@ void Game::State::startTrip(uint32_t seed) {
     sleeping = false;
     sleepEyes = 0.0f;
     sleepCooldown = 0.0f;
+    sleepSteadyT = 0.0f;
+    overheardT = 0.0f;
+    glimpseT = 0.0f;
+    hitStreak = 0;
+    gotBattery = false;
+    gotLock = false;
     ach.unlock(Ach::FirstTrip);
     ambDread = 0.0f;
     ambHeart = 0.0f;
@@ -779,6 +834,7 @@ void Game::State::enterDying(LoseReason r) {
     stateT = 0.0f;
     lose = r;
     ach.unlock(r == LoseReason::Fuel ? Ach::LoseFuel : Ach::LoseMonster);
+    ach.addLoss();
     view = ViewMode::RealWorld;
     hint = Hint::None;
     hintQueued = Hint::None;
@@ -826,13 +882,24 @@ void Game::State::updateMenu(float dt, const Input& in, bool accept) {
     mini.takeEvents();
     if (!accept) return;
     if (achScreen) {
-        // Список достижений: две колонки, стрелки — выбор, ESC/TAB/ENTER — назад.
-        const int rows = (kAchCount + 1) / 2;
-        int col = achCursor / rows, row = achCursor % rows;
-        if (in.pressed(Key::Up) || in.pressed(Key::W)) row = (row + rows - 1) % rows;
-        if (in.pressed(Key::Down) || in.pressed(Key::S)) row = (row + 1) % rows;
-        if (in.pressed(Key::Left) || in.pressed(Key::A) || in.pressed(Key::Right) || in.pressed(Key::D)) col = 1 - col;
-        const int idx = std::min(col * rows + row, kAchCount - 1);
+        // Список достижений: страницы по две колонки. Вверх/вниз — по колонке,
+        // влево/вправо — соседняя колонка (за краем — соседняя страница).
+        const int pages = (kAchCount + kAchPerPage - 1) / kAchPerPage;
+        int page = achCursor / kAchPerPage;
+        int col = (achCursor % kAchPerPage) / kAchRows;
+        int row = achCursor % kAchRows;
+        if (in.pressed(Key::Up) || in.pressed(Key::W)) row = (row + kAchRows - 1) % kAchRows;
+        if (in.pressed(Key::Down) || in.pressed(Key::S)) row = (row + 1) % kAchRows;
+        if (in.pressed(Key::Right) || in.pressed(Key::D)) {
+            if (col == 0) col = 1;
+            else { col = 0; page = (page + 1) % pages; }
+        }
+        if (in.pressed(Key::Left) || in.pressed(Key::A)) {
+            if (col == 1) col = 0;
+            else { col = 1; page = (page + pages - 1) % pages; }
+        }
+        int idx = page * kAchPerPage + col * kAchRows + row;
+        idx = std::min(idx, kAchCount - 1); // неполная последняя страница
         if (idx != achCursor) {
             achCursor = idx;
             audio.play(Sfx::MenuMove, 0.6f);
@@ -917,11 +984,14 @@ void Game::State::updatePlaying(float dt, const Input& in, bool accept) {
     steer = steerNow;
     tripTime += dt;
 
+    applyCheats();
+
     // ---- Мир ----
     updateCar(dt);
     updateItems(dt);
     updateMini(dt, true);
     const float aggression = clampf(progress * kAggrPerProgress + crashBoost, 0.0f, 1.0f);
+    if (cheatGod && monster.threat() > 80.0f) monster.reduceThreat(monster.threat() - 80.0f);
     updateMonster(dt, aggression, diff().breakMul * (lockLeft > 0.0f ? kLockBreakMul : 1.0f), true);
     updateWorld(dt);
     updateParents(dt);
@@ -1069,9 +1139,12 @@ void Game::State::shoot() {
         ++hits;
         ach.addHits(1);
         if (super) ach.unlock(Ach::SuperHit);
+        if (++hitStreak >= 5) ach.unlock(Ach::Streak5);
     } else {
+        hitStreak = 0;
         ach.unlock(Ach::Miss);
     }
+    if (aim == Entry::None && facelessT >= 0.9f) ach.unlock(Ach::FaceToFace); // вспышка в лица
     audio.play(Sfx::CameraShutter);
     parents.cue(ParentCue::CameraFlash);
 }
@@ -1153,7 +1226,9 @@ void Game::State::updateItems(float dt) {
 
 // live = false: мини-игра едет сама, её события ничего не меняют (финал/меню).
 void Game::State::updateMini(float dt, bool live) {
-    mini.update(dt, live ? steer : 0, live && view == ViewMode::Console, progress, hasCamera);
+    const bool pilot = live && cheatAutopilot;
+    const int steerUsed = pilot ? autopilotSteer() : (live ? steer : 0);
+    mini.update(dt, steerUsed, pilot || (live && view == ViewMode::Console), progress, hasCamera);
     for (MiniEvent e : mini.takeEvents()) {
         if (live) onMiniEvent(e);
     }
@@ -1181,12 +1256,16 @@ void Game::State::onMiniEvent(MiniEvent e) {
             charge = 1.0f;
             superFlash = true;
         }
+        gotBattery = true;
+        if (hasCamera && gotLock) ach.unlock(Ach::Collector);
         audio.play(Sfx::ConsolePickupItem);
         break;
     case MiniEvent::PickedLock:
         lockLeft = kLockTime;
         monster.reduceThreat(kLockThreat);
         ach.unlock(Ach::LockUsed);
+        gotLock = true;
+        if (hasCamera && gotBattery) ach.unlock(Ach::Collector);
         audio.play(Sfx::ConsolePickupItem);
         break;
     case MiniEvent::Crashed:
@@ -1269,6 +1348,8 @@ void Game::State::updateEndless(float dt) {
         if (facelessT >= 1.0f) ach.unlock(Ach::Faceless);
     }
     if (kmDriven >= kEndlessKmGoal) ach.unlock(Ach::Endless15km);
+    if (kmDriven >= 50.0f) ach.unlock(Ach::Km50);
+    if (tripTime >= 600.0f) ach.unlock(Ach::Marathon);
 }
 
 // ---- «Притвориться спящим» ----
@@ -1277,14 +1358,18 @@ void Game::State::updateEndless(float dt) {
 // родители отворачиваются. Сбился — тебя заметили.
 void Game::State::updateSleep(float dt, const Input& in, bool accept) {
     const bool canSleep = endlessTrip && view == ViewMode::RealWorld && accept;
-    const bool fDown = canSleep && in.down(Key::F);
+    const bool fDown = canSleep && (in.down(Key::F) || cheatAutoSleep); // автосон держит «F» сам
     sleepCooldown = std::max(0.0f, sleepCooldown - dt);
     if (!sleeping) {
         if (fDown) {
             holdF += dt;
             if (holdF >= kSleepHold && sleepCooldown <= 0.0f) {
                 sleeping = true;
-                if (!facelessStarted) parents.cue(ParentCue::KidAsleep); // «солнышко уснуло»
+                sleepSteadyT = 0.0f;
+                ach.unlock(Ach::Pretender);
+                // Стоило закрыть глаза — родители становятся странными.
+                parents.setKidAsleep(true);
+                if (!facelessStarted) parents.cue(ParentCue::KidAsleep);
                 sleepPos = 0.0f;
                 sleepVel = 0.0f;
                 sleepOut = 0.0f;
@@ -1300,28 +1385,52 @@ void Game::State::updateSleep(float dt, const Input& in, bool accept) {
         sleepVel += rng.signedUnit() * (9.0f + 9.0f * aggr) * dt;       // дыхание само сбивается
         sleepVel += static_cast<float>(in.horizontal()) * kSleepPush * dt;
         sleepVel *= std::exp(-1.6f * dt);
+        if (cheatAutoSleep) sleepVel = -sleepPos * 4.0f; // автосон: дыхание само возвращается в зону
         sleepPos += sleepVel * dt;
         if (sleepPos < -1.0f || sleepPos > 1.0f) {
             sleepPos = clampf(sleepPos, -1.0f, 1.0f);
             sleepVel = 0.0f;
         }
         if (facelessStarted) parents.cue(ParentCue::Whisper); // безликие шепчут «спящему»
+        else parents.cue(ParentCue::AsleepTalk);               // странные разговоры
+        if (parents.hasLine()) {
+            overheardT += dt;
+            if (facelessStarted) ach.unlock(Ach::Whispers);
+            else if (overheardT >= 1.0f) ach.unlock(Ach::Overheard);
+        }
         if (std::fabs(sleepPos) <= kSleepZone) {
             sleepOut = 0.0f;
             monster.reduceThreat(kSleepCalm * dt);
+            // «Спящий» гостю неинтересен: он не прилетает, а с крыши уходит.
+            monster.delay(dt);
+            sleepSteadyT += dt;
+            if (sleepSteadyT >= 30.0f) ach.unlock(Ach::DeepSleep);
+            const MonsterState ms = monster.state();
+            const bool pressing = ms == MonsterState::Landing || ms == MonsterState::Crawling ||
+                                  ms == MonsterState::Peeking || ms == MonsterState::BreakingIn;
+            if (pressing && sleepSteadyT >= kSleepRepel) {
+                monster.flee(false);
+                ach.unlock(Ach::Lullaby);
+            }
             if (facelessStarted) facelessT = std::max(0.0f, facelessT - dt / kFacelessTurn);
         } else {
+            sleepSteadyT = 0.0f;
             sleepOut += dt;
             if (sleepOut >= kSleepGrace) wakeUp(true);
         }
     }
     sleepEyes = approach(sleepEyes, sleeping ? 1.0f : 0.0f, dt * 3.0f);
+    glimpseT = std::max(0.0f, glimpseT - dt);
 }
 
 void Game::State::wakeUp(bool caught) {
     sleeping = false;
     holdF = 0.0f;
+    parents.setKidAsleep(false);
+    // Открываешь глаза — а они уже обернулись к тебе и тут же отворачиваются.
+    if (!facelessStarted) glimpseT = kGlimpseTime;
     if (!caught) return;
+    ach.unlock(Ach::Caught);
     // Тебя заметили: гость возвращается быстрее, родители снова смотрят на тебя.
     sleepCooldown = kSleepCooldown;
     monster.attract(6.0f);
@@ -1348,6 +1457,8 @@ void Game::State::onTripWon() {
     if (photos > 0 && photos == hits) ach.unlock(Ach::PerfectAim);
     if (mini.crashes() == 0) ach.unlock(Ach::CleanRun);
     if (maxThreat >= 90.0f) ach.unlock(Ach::CloseCall);
+    if (maxThreat < 20.0f) ach.unlock(Ach::Untouched);
+    if (audio.muted()) ach.unlock(Ach::SilentRide);
     ach.addWin();
 }
 
@@ -1359,6 +1470,135 @@ void Game::State::updatePopup(float dt) {
         popupT = 0.0f;
         audio.play(Sfx::MenuSelect, 0.8f, 0.0f, 1.25f);
     }
+}
+
+// ---- Админ-панель ----
+// INS открывает панель; сначала пароль (1667), потом список читов.
+void Game::State::updateAdmin(float dt, const Input& in) {
+    adminMsgT = std::max(0.0f, adminMsgT - dt);
+    if (in.pressed(Key::Escape)) {
+        adminOpen = false;
+        audio.play(Sfx::MenuMove);
+        return;
+    }
+    if (!adminUnlocked) {
+        for (int d = 0; d < 10; ++d) {
+            if (in.pressed(static_cast<Key>(static_cast<int>(Key::Digit0) + d)) && adminLen < kAdminMaxDigits) {
+                adminInput[adminLen++] = static_cast<char>('0' + d);
+                adminInput[adminLen] = '\0';
+                audio.play(Sfx::ConsoleBlip, 0.7f);
+            }
+        }
+        if (in.pressed(Key::Backspace) && adminLen > 0) adminInput[--adminLen] = '\0';
+        if (in.pressed(Key::Enter)) {
+            if (std::strcmp(adminInput, kAdminPassword) == 0) {
+                adminUnlocked = true;
+                adminCursor = 0;
+                adminMsgT = 0.0f; // не тянуть «неверный пароль» с прошлой попытки
+                audio.play(Sfx::MenuSelect);
+            } else {
+                adminMsg = T8("НЕВЕРНЫЙ ПАРОЛЬ");
+                adminMsgT = 1.5f;
+                audio.play(Sfx::CameraEmpty);
+            }
+            adminLen = 0;
+            adminInput[0] = '\0';
+        }
+        return;
+    }
+    if (in.pressed(Key::Up) || in.pressed(Key::W)) adminCursor = (adminCursor + kAdminItems - 1) % kAdminItems;
+    if (in.pressed(Key::Down) || in.pressed(Key::S)) adminCursor = (adminCursor + 1) % kAdminItems;
+    if (in.pressed(Key::Enter) || in.pressed(Key::Space)) applyAdmin(static_cast<AdminItem>(adminCursor));
+}
+
+void Game::State::applyAdmin(AdminItem item) {
+    const bool trip = state == GameState::Playing || state == GameState::Paused;
+    adminMsg = "";
+    switch (item) {
+    case AdminItem::AutoSleep: cheatAutoSleep = !cheatAutoSleep; break;
+    case AdminItem::God: cheatGod = !cheatGod; break;
+    case AdminItem::Fuel: cheatFuel = !cheatFuel; break;
+    case AdminItem::Autopilot: cheatAutopilot = !cheatAutopilot; break;
+    case AdminItem::Camera: cheatCamera = !cheatCamera; break;
+    case AdminItem::AutoWin:
+        if (!trip) adminMsg = T8("ТОЛЬКО В ПОЕЗДКЕ");
+        else if (endlessTrip) adminMsg = T8("У ЭТОЙ ДОРОГИ НЕТ КОНЦА");
+        else {
+            progress = 1.0f; // на следующем тике — приезд
+            adminMsg = T8("ПРИЕХАЛИ");
+        }
+        break;
+    case AdminItem::Banish:
+        if (!trip) adminMsg = T8("ТОЛЬКО В ПОЕЗДКЕ");
+        else {
+            monster.flee(false);
+            monster.reduceThreat(100.0f);
+            adminMsg = T8("ГОСТЬ УШЁЛ");
+        }
+        break;
+    case AdminItem::Faceless:
+        if (!trip || !endlessTrip) adminMsg = T8("ТОЛЬКО НА БЕСКОНЕЧНОЙ ДОРОГЕ");
+        else {
+            tripTime = std::max(tripTime, kFacelessAt);
+            adminMsg = T8("ОНИ ОБОРАЧИВАЮТСЯ");
+        }
+        break;
+    case AdminItem::Endless:
+        endless = !endless;
+        if (state == GameState::Playing || state == GameState::Paused) endlessTrip = endless;
+        break;
+    case AdminItem::UnlockAll:
+        for (int i = 0; i < kAchCount; ++i) ach.unlock(static_cast<Ach>(i));
+        adminMsg = T8("ВСЕ ДОСТИЖЕНИЯ ОТКРЫТЫ");
+        break;
+    case AdminItem::Count: break;
+    }
+    adminMsgT = adminMsg[0] ? 1.5f : 0.0f;
+    audio.play(Sfx::MenuSelect, 0.7f);
+}
+
+// Постоянные читы — каждый тик поездки.
+void Game::State::applyCheats() {
+    if (cheatFuel) fuel = kFuelMax;
+    if (cheatCamera) {
+        hasCamera = true;
+        charge = 1.0f;
+    }
+}
+
+// Автопилот мини-игры: к ближайшему предмету впереди, в обход препятствий,
+// не съезжая с дороги.
+int Game::State::autopilotSteer() const {
+    const float px = mini.playerX(), py = mini.playerY();
+    const float half = mini.roadHalfWidth();
+    float target = mini.roadCenterAt(py - 30.0f);
+    float bestDy = 1.0e9f;
+    for (const MiniObject& o : mini.objects()) {
+        if (!o.alive) continue;
+        const bool pickup = o.type == MiniObjectType::Fuel || o.type == MiniObjectType::Camera ||
+                            o.type == MiniObjectType::Battery || o.type == MiniObjectType::Lock;
+        const float dy = py - o.y; // > 0 — впереди
+        if (pickup && dy > -4.0f && dy < 90.0f && dy < bestDy) {
+            bestDy = dy;
+            target = o.x;
+        }
+    }
+    const float center = mini.roadCenterAt(py - 20.0f);
+    for (const MiniObject& o : mini.objects()) {
+        if (!o.alive) continue;
+        const bool pickup = o.type == MiniObjectType::Fuel || o.type == MiniObjectType::Camera ||
+                            o.type == MiniObjectType::Battery || o.type == MiniObjectType::Lock;
+        const float dy = py - o.y;
+        if (pickup || dy < -6.0f || dy > 64.0f) continue;
+        const float clear = o.w * 0.5f + 10.0f;
+        if (std::fabs(o.x - target) < clear || std::fabs(o.x - px) < clear) {
+            target = o.x < center ? o.x + clear + 2.0f : o.x - clear - 2.0f;
+        }
+    }
+    target = clampf(target, center - half + 8.0f, center + half - 8.0f);
+    if (target > px + 2.0f) return 1;
+    if (target < px - 2.0f) return -1;
+    return 0;
 }
 
 // ---- Подсказки ----
@@ -1506,7 +1746,7 @@ RealWorldView Game::State::makeView(bool hud) const {
     v.consoleDpad = 0;
     v.endless = endlessTrip;
     v.kmDriven = kmDriven;
-    v.facelessTurn = facelessT;
+    v.facelessTurn = std::max(facelessT, 0.8f * saturate(glimpseT / 0.3f));
     return v;
 }
 
@@ -1592,16 +1832,21 @@ void Game::State::renderMenu(Canvas& out) {
 void Game::State::renderAchievements(Canvas& out) const {
     out.blendRect(0, 0, kW, kH, rgb(0, 0, 0), 0.6f);
     hud::drawPanel(out, 6, 4, 308, 172, 0.92f);
-    char title[64];
-    std::snprintf(title, sizeof(title), "%s  %d/%d", T8("ДОСТИЖЕНИЯ"), ach.unlockedCount(), kAchCount);
+    const int pages = (kAchCount + kAchPerPage - 1) / kAchPerPage;
+    const int page = achCursor / kAchPerPage;
+    char title[96];
+    std::snprintf(title, sizeof(title), "%s  %d/%d   %s %d/%d", T8("ДОСТИЖЕНИЯ"), ach.unlockedCount(), kAchCount,
+                  T8("СТР."), page + 1, pages);
     textCentered(out, 160, 9, title, kKeyColor);
-    const int rows = (kAchCount + 1) / 2;
-    for (int i = 0; i < kAchCount; ++i) {
+    const int first = page * kAchPerPage;
+    const int last = std::min(kAchCount, first + kAchPerPage);
+    for (int i = first; i < last; ++i) {
         const Ach a = static_cast<Ach>(i);
         const AchievementInfo& inf = Achievements::info(a);
         const bool got = ach.has(a);
-        const int x = 14 + (i / rows) * 150;
-        const int y = 22 + (i % rows) * 9;
+        const int local = i - first;
+        const int x = 14 + (local / kAchRows) * 150;
+        const int y = 22 + (local % kAchRows) * 9;
         if (i == achCursor) out.blendRect(x - 3, y - 1, 146, 9, rgb(120, 110, 150), 0.35f);
         font::drawText(out, x, y, got ? "+" : "-", got ? rgb(140, 210, 140) : rgb(70, 66, 80));
         const char* name = (!got && inf.secret) ? "???" : inf.title;
@@ -1643,6 +1888,50 @@ void Game::State::renderSleep(Canvas& out) const {
     const int mx = 160 + roundi(sleepPos * static_cast<float>(bw) * 0.5f);
     const bool blink = !inZone && static_cast<int>(animTime * 10.0f) % 2 == 0;
     out.fillRect(mx - 1, by - 3, 3, 14, blink ? rgb(230, 60, 50) : rgb(230, 226, 214));
+}
+
+// Админ-панель: сначала поле пароля, затем список читов.
+void Game::State::renderAdmin(Canvas& out) const {
+    out.blendRect(0, 0, kW, kH, rgb(0, 0, 0), 0.55f);
+    const int pw = 236, ph = adminUnlocked ? 150 : 64;
+    const int px = 160 - pw / 2, py = 90 - ph / 2;
+    hud::drawPanel(out, px, py, pw, ph, 0.94f);
+    out.fillRect(px + 1, py + 1, pw - 2, 1, rgb(200, 70, 70));
+    textCentered(out, 160, py + 5, T8("АДМИН-ПАНЕЛЬ"), rgb(220, 90, 90));
+    if (!adminUnlocked) {
+        char stars[kAdminMaxDigits + 2] = {};
+        for (int i = 0; i < adminLen; ++i) stars[i] = '*';
+        if (static_cast<int>(animTime * 2.0f) % 2 == 0) stars[adminLen] = '_';
+        char line[48];
+        std::snprintf(line, sizeof(line), "%s %s", T8("ПАРОЛЬ:"), stars);
+        textCentered(out, 160, py + 21, line, hud::kText);
+        if (adminMsgT > 0.0f) textCentered(out, 160, py + 33, adminMsg, rgb(230, 80, 70));
+        textCentered(out, 160, py + 47, T8("ЦИФРЫ, ENTER - ВОЙТИ, ESC - ЗАКРЫТЬ"), hud::kTextDim);
+        return;
+    }
+    struct Row { const char* name; int toggle; }; // toggle: -1 действие, 0/1 — выкл/вкл
+    const Row rows[kAdminItems] = {
+        {T8("Автосон (сам держит дыхание)"), cheatAutoSleep ? 1 : 0},
+        {T8("Бессмертие"), cheatGod ? 1 : 0},
+        {T8("Бесконечный бензин"), cheatFuel ? 1 : 0},
+        {T8("Автопилот мини-игры"), cheatAutopilot ? 1 : 0},
+        {T8("Камера всегда готова"), cheatCamera ? 1 : 0},
+        {T8("Авто-победа"), -1},
+        {T8("Прогнать гостя"), -1},
+        {T8("Сразу к безликим"), -1},
+        {T8("Бесконечная дорога"), endless ? 1 : 0},
+        {T8("Открыть все достижения"), -1},
+    };
+    for (int i = 0; i < kAdminItems; ++i) {
+        const int y = py + 19 + i * 10;
+        if (i == adminCursor) out.blendRect(px + 6, y - 2, pw - 12, 10, rgb(150, 60, 60), 0.4f);
+        font::drawTextShadow(out, px + 12, y, rows[i].name, i == adminCursor ? hud::kText : hud::kTextDim, hud::kShadow);
+        const char* val = rows[i].toggle < 0 ? "[ENTER]" : (rows[i].toggle ? T8("ВКЛ") : T8("ВЫКЛ"));
+        const uint32_t vc = rows[i].toggle < 0 ? rgb(150, 140, 120) : (rows[i].toggle ? rgb(120, 220, 120) : rgb(110, 100, 110));
+        textRight(out, px + pw - 12, y, val, vc);
+    }
+    if (adminMsgT > 0.0f) textCentered(out, 160, py + ph - 26, adminMsg, kKeyColor);
+    textCentered(out, 160, py + ph - 13, T8("W/S - ВЫБОР, ENTER - ПРИМЕНИТЬ, ESC - ЗАКРЫТЬ"), hud::kTextDim);
 }
 
 // «ДОСТИЖЕНИЕ ПОЛУЧЕНО» — выезжает сверху по центру и уезжает обратно.
@@ -1931,9 +2220,31 @@ void Game::update(float dt, const Input& input) {
         s.userVolume = s.userVolume >= 0.999f ? kVolumeStep : std::min(1.0f, s.userVolume + kVolumeStep);
         s.toastVolume = true;
         s.toastT = 0.0f;
+        if (s.userVolume <= kVolumeStep + 0.001f) s.ach.unlock(Ach::Hush);
         s.audio.play(Sfx::MenuMove, 0.7f);
     }
     if (input.pressed(Key::F11)) s.fullscreenReq = true;
+
+    // INS — админ-панель; пока открыта, игра стоит.
+    if (input.pressed(Key::Insert)) {
+        s.adminOpen = !s.adminOpen;
+        s.adminLen = 0;
+        s.adminInput[0] = '\0';
+        s.adminMsgT = 0.0f;
+        s.audio.play(Sfx::MenuMove);
+    } else if (s.adminOpen) {
+        s.updateAdmin(dt, input);
+        // Панель закрыли клавишей ESC — этот же ESC не должен дойти до игры (пауза/выход).
+        if (!s.adminOpen) {
+            s.updateAmbient(dt);
+            return;
+        }
+    }
+    if (s.adminOpen) {
+        s.updatePopup(dt);
+        s.updateAmbient(dt);
+        return;
+    }
 
     const bool accept = !s.fadePending;
     if (s.state != GameState::Paused) s.animTime += dt;
@@ -1980,6 +2291,8 @@ void Game::render(Canvas& out) {
     case GameState::Victory: s.renderVictory(out); break;
     }
     if (s.state == GameState::Playing || s.state == GameState::Paused) s.renderSleep(out);
+    if (s.anyCheat() && s.state == GameState::Playing) textCentered(out, 160, 172, "ADMIN", rgb(200, 70, 70));
+    if (s.adminOpen) s.renderAdmin(out);
     s.renderToast(out);
     s.renderPopup(out);
 
