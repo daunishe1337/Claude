@@ -1244,8 +1244,8 @@ void Game::State::updateParents(float dt) {
     float dur = 0.0f;
     if (parents.takeLineStarted(who, dur)) {
         const bool dad = who == Speaker::Dad;
-        audio.play(dad ? Sfx::MumbleDad : Sfx::MumbleMom, 0.8f + 0.25f * parents.tension(), dad ? -0.35f : 0.35f,
-                   dur);
+        const float vol = facelessStarted ? 0.35f : 0.8f + 0.25f * parents.tension(); // шёпот — тише
+        audio.play(dad ? Sfx::MumbleDad : Sfx::MumbleMom, vol, dad ? -0.35f : 0.35f, dur);
     }
 }
 
@@ -1284,6 +1284,7 @@ void Game::State::updateSleep(float dt, const Input& in, bool accept) {
             holdF += dt;
             if (holdF >= kSleepHold && sleepCooldown <= 0.0f) {
                 sleeping = true;
+                if (!facelessStarted) parents.cue(ParentCue::KidAsleep); // «солнышко уснуло»
                 sleepPos = 0.0f;
                 sleepVel = 0.0f;
                 sleepOut = 0.0f;
@@ -1304,6 +1305,7 @@ void Game::State::updateSleep(float dt, const Input& in, bool accept) {
             sleepPos = clampf(sleepPos, -1.0f, 1.0f);
             sleepVel = 0.0f;
         }
+        if (facelessStarted) parents.cue(ParentCue::Whisper); // безликие шепчут «спящему»
         if (std::fabs(sleepPos) <= kSleepZone) {
             sleepOut = 0.0f;
             monster.reduceThreat(kSleepCalm * dt);
@@ -1618,7 +1620,7 @@ void Game::State::renderAchievements(Canvas& out) const {
 void Game::State::renderSleep(Canvas& out) const {
     if (endlessTrip && !sleeping && tripTime < 9.0f && state == GameState::Playing) {
         const float a = saturate(std::min(tripTime / 0.5f, (9.0f - tripTime) / 0.6f));
-        textBanner(out, 160, 73, T8("ДЕРЖИ F - ПРИТВОРИТЬСЯ СПЯЩИМ"), rgb(200, 190, 220), a);
+        textBanner(out, 160, 58, T8("ДЕРЖИ F - ПРИТВОРИТЬСЯ СПЯЩИМ"), rgb(200, 190, 220), a); // выше подсказки TAB
     }
     if (sleepEyes <= 0.0f) return;
     const float open = 90.0f * (1.0f - 0.97f * smoothstep(0.0f, 1.0f, sleepEyes));
@@ -1628,6 +1630,8 @@ void Game::State::renderSleep(Canvas& out) const {
         const float k = d >= 0.0f ? 1.0f : 1.0f - (-d / 8.0f);
         out.blendRect(0, y, kW, 1, rgb(2, 1, 3), 0.97f * k);
     }
+    // Глаза закрыты, но уши — нет: субтитры поверх век.
+    if (sleepEyes > 0.3f && state == GameState::Playing) renderSubtitle(out, false);
     if (!sleeping) return;
     const bool inZone = std::fabs(sleepPos) <= kSleepZone;
     const int bx = 90, bw = 140, by = 148;
@@ -1747,7 +1751,8 @@ void Game::State::renderConsoleView(Canvas& out, float r, bool hud) {
 
 void Game::State::renderSubtitle(Canvas& out, bool consoleView) const {
     if (!parents.hasLine()) return;
-    const uint32_t col = parents.speaker() == Speaker::Dad ? kDadColor : kMomColor;
+    uint32_t col = parents.speaker() == Speaker::Dad ? kDadColor : kMomColor;
+    if (facelessStarted) col = rgb(176, 188, 200); // шёпот безликих — бесцветный
     if (consoleView) {
         // Вплотную к верхнему краю: две строки почти не заходят на экран консоли.
         hud::drawSubtitle(out, 160, 1, 316, parents.speakerName(), parents.text(), parents.visibleChars(),

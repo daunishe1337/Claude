@@ -647,6 +647,34 @@ const Reaction kEndlessLoop[] = {
     {{dad(T8("Не спишь? Мы эту табличку уже проезжали?"), To::Kid),
       mom(T8("Не впутывай ребёнка. Едем и едем."))}},
 };
+// Ребёнок «уснул» (притворяется): при «спящем» родители говорят тише и откровеннее.
+const Reaction kKidAsleep[] = {
+    {{mom(T8("Солнышко уснуло.")), dad(T8("Наконец-то. Давай потише."))}},
+    {{dad(T8("Спит?")), mom(T8("Спит. Теперь можно говорить нормально."))}},
+    {{mom(T8("Тише, солнышко спит.")), dad(T8("Да я и так шёпотом."))}},
+    {{dad(T8("Спит наш пассажир.")), mom(T8("Пусть спит. Ещё ехать и ехать."))}},
+    {{mom(T8("Уснуло. Хоть не слышит, как мы ругаемся.")), dad(T8("Мы не ругаемся. Мы обсуждаем."))}},
+    {{dad(T8("Спит? Тогда скажу. Я заблудился.")), mom(T8("Я знаю. Я давно знаю."))}},
+    {{mom(T8("Раз спит... Ты правда не знаешь, где мы?")), dad(T8("Знаю. Почти знаю."))}},
+    {{dad(T8("Пока спит: я этой дороги не помню.")), mom(T8("И я. Её не было на карте."))}},
+    {{mom(T8("Спит. Ты видел, что там в окне?")), dad(T8("Ничего там нет. Отражение."))}},
+    {{dad(T8("Уснуло. Можно я хоть музыку включу?")), mom(T8("Только тихо. И не свою."))}},
+};
+// Безликие шепчут «спящему». Звучит только после silence().
+const Reaction kWhisper[] = {
+    {{mom(T8("Спит?")), dad(T8("Ещё нет."))}},
+    {{dad(T8("Тише. Пусть уснёт."))}},
+    {{mom(T8("Дыши ровно, солнышко. Мы слышим."))}},
+    {{dad(T8("Мы подождём."))}},
+    {{mom(T8("Не открывай глаза."))}},
+    {{dad(T8("Почти приехали. Почти."))}},
+    {{mom(T8("Спи. Дорога длинная."))}},
+    {{dad(T8("Ты всегда так дышишь, когда притворяешься."))}},
+    {{mom(T8("Мама здесь. Мама рядом."))}},
+    {{dad(T8("Папа не устал. Папа будет ехать всегда."))}},
+    {{mom(T8("Скоро. Совсем скоро.")), dad(T8("Тсс."))}},
+    {{dad(T8("Посмотри на нас.")), mom(T8("Нет. Пусть спит."))}},
+};
 // clang-format on
 
 struct CueInfo {
@@ -673,15 +701,19 @@ const CueInfo kCues[] = {
     {kNearHome, countOf(kNearHome), kNever, 15.0f, 0.10f, 7, true, false},
     {kArrived, countOf(kArrived), kNever, kNever, 0.05f, 10, true, true},
     {kEndlessLoop, countOf(kEndlessLoop), 25.0f, 12.0f, 0.35f, 4, false, false},
+    {kKidAsleep, countOf(kKidAsleep), 30.0f, 4.0f, 0.15f, 3, false, false},
+    {kWhisper, countOf(kWhisper), 5.0f, 3.0f, 0.05f, 9, false, false},
 };
 
-constexpr int kCueCount = static_cast<int>(ParentCue::EndlessLoop) + 1;
+constexpr int kCueCount = static_cast<int>(ParentCue::Whisper) + 1;
+constexpr int kWhisperCue = static_cast<int>(ParentCue::Whisper);
 static_assert(countOf(kCues) == kCueCount, "kCues must follow the ParentCue order");
 static_assert(countOf(kRoofThud) <= kMaxVariants && countOf(kWindowBang) <= kMaxVariants &&
                   countOf(kCameraFlash) <= kMaxVariants && countOf(kLowFuel) <= kMaxVariants &&
                   countOf(kConsoleCrash) <= kMaxVariants && countOf(kStalling) <= kMaxVariants &&
                   countOf(kNearHome) <= kMaxVariants && countOf(kArrived) <= kMaxVariants &&
-                  countOf(kEndlessLoop) <= kMaxVariants,
+                  countOf(kEndlessLoop) <= kMaxVariants && countOf(kKidAsleep) <= kMaxVariants &&
+                  countOf(kWhisper) <= kMaxVariants,
               "too many reaction variants");
 
 // ============================================================================
@@ -850,8 +882,10 @@ struct Parents::State {
 void Parents::State::step(float dt) {
     clock += dt;
     phaseT += dt;
-    if (silenced) {
-        // Замолчали: дожидаемся, пока погаснет последняя реплика, и больше ничего.
+    if (silenced && reCue != kWhisperCue && pending != kWhisperCue) {
+        // Замолчали: дожидаемся, пока погаснет последняя реплика, и больше ничего
+        // (только шёпот «спящему» может начаться — см. cue()).
+        for (float& c : cooldown) c = std::max(0.0f, c - dt);
         if (phase == Phase::Gap || (phase == Phase::Speaking && phaseT >= lineDur)) {
             phase = Phase::Silence;
             phaseT = 0.0f;
@@ -891,7 +925,7 @@ void Parents::State::step(float dt) {
     case Phase::Silence:
         if (pending >= 0 && phaseT >= kReactionGap) {
             startReaction();
-        } else if (!finished && clock >= nextExchangeAt) {
+        } else if (!finished && !silenced && clock >= nextExchangeAt) {
             if (reconcileQueued) {
                 reconcileQueued = false;
                 startExchange(reconcileIdx);
@@ -1244,7 +1278,8 @@ void Parents::update(float dt) {
 void Parents::cue(ParentCue c) {
     State& s = *st_;
     const int ci = static_cast<int>(c);
-    if (ci < 0 || ci >= kCueCount || s.finished || s.silenced) return;
+    if (ci < 0 || ci >= kCueCount || s.finished) return;
+    if (s.silenced != (ci == kWhisperCue)) return; // после silence() — только шёпот, и шёпот — только тогда
     const CueInfo& info = kCues[ci];
     const size_t i = static_cast<size_t>(ci);
     if ((info.once && s.used[i]) || s.cooldown[i] > 0.0f) return;
@@ -1283,6 +1318,7 @@ bool Parents::hasLine() const { return st_->phase == Phase::Speaking && st_->lin
 Speaker Parents::speaker() const { return st_->lastSpeaker; }
 
 const char* Parents::speakerName() const {
+    if (st_->silenced) return "???"; // безликие: уже не «папа» и не «мама»
     return st_->lastSpeaker == Speaker::Dad ? T8("ПАПА") : T8("МАМА");
 }
 
@@ -1310,7 +1346,7 @@ float Parents::tension() const { return st_->tension; }
 // ---- Звук ------------------------------------------------------------------------------
 bool Parents::takeLineStarted(Speaker& who, float& duration) {
     State& s = *st_;
-    if (!s.started || s.silenced) return false;
+    if (!s.started) return false;
     s.started = false;
     who = s.startedWho;
     duration = s.startedDur;
