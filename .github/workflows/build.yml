@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Upload exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCSimulator2-Windows
+          path: build/Release/PCSimulator2.exe
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system headers
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libgl-dev
+      - name: Build
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+      - name: Self-test
+        run: ./build/PCSimulator2 --selftest

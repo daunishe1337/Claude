@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.16)
+project(PCSimulator2 LANGUAGES CXX)
+
+# Без сторонних библиотек: только C++17, OpenGL и системные API (WinAPI на Windows, X11 на Linux).
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+file(GLOB SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp)
+
+if(WIN32)
+  add_executable(PCSimulator2 WIN32 ${SOURCES})
+  target_link_libraries(PCSimulator2 PRIVATE opengl32 gdi32 user32 winmm)
+  if(MSVC)
+    target_compile_options(PCSimulator2 PRIVATE /utf-8 /W3)
+    target_compile_definitions(PCSimulator2 PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_link_options(PCSimulator2 PRIVATE /ENTRY:mainCRTStartup)
+    # Статическая CRT — exe запускается без дополнительных DLL
+    set_property(TARGET PCSimulator2 PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  else()
+    target_compile_options(PCSimulator2 PRIVATE -Wall)
+    target_link_options(PCSimulator2 PRIVATE -static -static-libgcc -static-libstdc++)
+  endif()
+else()
+  find_package(OpenGL REQUIRED)
+  find_package(X11 REQUIRED)
+  add_executable(PCSimulator2 ${SOURCES})
+  target_compile_options(PCSimulator2 PRIVATE -Wall)
+  target_link_libraries(PCSimulator2 PRIVATE OpenGL::GL ${X11_LIBRARIES})
+endif()

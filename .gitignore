@@ -1,0 +1,10 @@
+build/
+out/
+*.obj
+*.exe
+*.bmp
+pcsim2_save.txt
+pcsim2_save.txt.tmp
+pcsim2_settings.txt
+pcsim2_settings.txt.tmp
+.vs/
