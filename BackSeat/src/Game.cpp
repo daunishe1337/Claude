@@ -76,6 +76,23 @@ constexpr float kCueThudChance = 0.7f;    // родители реагируют
 constexpr float kCueBangChance = 0.3f;    // ...на удар по стеклу...
 constexpr float kCueCrashChance = 0.4f;   // ...и на писк консоли (не каждый раз)
 
+// ---- Уровни сложности (выбираются в меню стрелками) --------------------------
+struct DifficultyPreset {
+    const char* name;  // название для меню и экрана итогов (UTF-8)
+    float fuelDrain;   // расход бензина, ед./с
+    float canister;    // сколько даёт канистра
+    float firstVisit;  // первый визит монстра, с от начала поездки
+    float breakMul;    // множитель скорости взлома
+    float recharge;    // перезарядка вспышки, с
+};
+const DifficultyPreset kDifficulties[] = {
+    {T8("ЛЁГКАЯ"), 1.1f, 28.0f, 35.0f, 0.7f, 3.0f},
+    {T8("НОРМАЛЬНАЯ"), kFuelDrain, kCanister, kFirstVisit, 1.0f, kRecharge},
+    {T8("СЛОЖНАЯ"), 2.0f, 10.0f, 5.0f, 2.0f, 4.0f},
+};
+constexpr int kDifficultyCount = static_cast<int>(sizeof(kDifficulties) / sizeof(kDifficulties[0]));
+constexpr int kDefaultDifficulty = 1;
+
 // ---- Виды и экраны ----------------------------------------------------------------
 constexpr int kW = cfg::kScreenW;
 constexpr int kH = cfg::kScreenH;
@@ -442,6 +459,8 @@ struct Game::State {
     bool hintFuelShown = false;
 
     // ---- Статистика ----
+    int difficulty = kDefaultDifficulty; // индекс в kDifficulties; переживает рестарты
+    const DifficultyPreset& diff() const { return kDifficulties[difficulty]; }
     int photos = 0;
     int hits = 0;
 
@@ -608,7 +627,7 @@ void Game::State::enterIntro() {
 void Game::State::startTrip(uint32_t seed) {
     scene.reset(seed);
     mini.reset(mixSeed(seed ^ 0x6D696E69u));
-    monster.reset(mixSeed(seed ^ 0x6D6F6E73u), kFirstVisit);
+    monster.reset(mixSeed(seed ^ 0x6D6F6E73u), diff().firstVisit);
     parents.reset(mixSeed(seed ^ 0x70617265u));
     rng.reseed(mixSeed(seed ^ 0x67616D65u));
 
@@ -727,6 +746,14 @@ void Game::State::updateMenu(float dt, const Input& in, bool accept) {
         quit = true;
         return;
     }
+    // Выбор сложности: влево/вправо по кругу.
+    int step = 0;
+    if (in.pressed(Key::Left) || in.pressed(Key::A)) step = -1;
+    if (in.pressed(Key::Right) || in.pressed(Key::D)) step = 1;
+    if (step != 0) {
+        difficulty = (difficulty + step + kDifficultyCount) % kDifficultyCount;
+        audio.play(Sfx::MenuMove);
+    }
     if (in.pressed(Key::Enter)) {
         audio.play(Sfx::MenuSelect);
         go(Goto::Intro, 0.7f, 0.6f);
@@ -774,7 +801,7 @@ void Game::State::updatePlaying(float dt, const Input& in, bool accept) {
     updateItems(dt);
     updateMini(dt, true);
     const float aggression = clampf(progress * kAggrPerProgress + crashBoost, 0.0f, 1.0f);
-    updateMonster(dt, aggression, lockLeft > 0.0f ? kLockBreakMul : 1.0f, true);
+    updateMonster(dt, aggression, diff().breakMul * (lockLeft > 0.0f ? kLockBreakMul : 1.0f), true);
     updateWorld(dt);
     updateParents(dt);
     updateHints(dt);
@@ -918,7 +945,7 @@ void Game::State::shoot() {
 }
 
 void Game::State::updateCar(float dt) {
-    if (engine != EngineState::Dead) fuel = std::max(0.0f, fuel - kFuelDrain * dt);
+    if (engine != EngineState::Dead) fuel = std::max(0.0f, fuel - diff().fuelDrain * dt);
     switch (engine) {
     case EngineState::Running:
         if (fuel <= 0.0f) {
@@ -979,7 +1006,7 @@ void Game::State::updateCar(float dt) {
 
 void Game::State::updateItems(float dt) {
     if (hasCamera && charge < 1.0f) {
-        charge = std::min(1.0f, charge + dt / kRecharge);
+        charge = std::min(1.0f, charge + dt / diff().recharge);
         if (charge >= 1.0f) audio.play(Sfx::CameraReady);
     }
     lockLeft = std::max(0.0f, lockLeft - dt);
@@ -999,7 +1026,7 @@ void Game::State::updateMini(float dt, bool live) {
 void Game::State::onMiniEvent(MiniEvent e) {
     switch (e) {
     case MiniEvent::PickedFuel:
-        fuel = std::min(kFuelMax, fuel + kCanister);
+        fuel = std::min(kFuelMax, fuel + diff().canister);
         audio.play(Sfx::ConsolePickupFuel);
         break;
     case MiniEvent::PickedCamera:
@@ -1276,12 +1303,20 @@ void Game::State::renderMenu(Canvas& out) {
         ry += 11;
     }
 
+    // ---- Сложность ----
+    {
+        char line[64];
+        std::snprintf(line, sizeof(line), "%s  < %s >", T8("СЛОЖНОСТЬ:"), diff().name);
+        const uint32_t col = difficulty == 2 ? rgb(214, 96, 90) : (difficulty == 0 ? rgb(150, 196, 150) : kKeyColor);
+        textCentered(out, 160, 141, line, col);
+    }
+
     // ---- Старт и выход ----
     const float pulse = 0.55f + 0.45f * std::sin(animTime * 3.2f);
     const int w1 = keyHintWidth("ENTER", T8("НАЧАТЬ"));
     const int w2 = keyHintWidth("ESC", T8("ВЫХОД"));
     const int gap = 22;
-    const int bx = 160 - (w1 + gap + w2) / 2, by = 150;
+    const int bx = 160 - (w1 + gap + w2) / 2, by = 153;
     hud::drawKeyHint(out, bx, by, "ENTER", T8("НАЧАТЬ"), 0.55f + 0.45f * pulse);
     hud::drawKeyHint(out, bx + w1 + gap, by, "ESC", T8("ВЫХОД"), 0.7f);
     if (toastT >= kToastTime) textCentered(out, 160, 168, T8("Лучше играть в наушниках"), rgb(84, 80, 92));
@@ -1474,12 +1509,12 @@ void Game::State::renderResult(Canvas& out, bool victory) {
     font::drawText(out, 160 - tw / 2, 8, title, titleCol, 2);
     textBanner(out, 160, 31, reason, victory ? hud::kText : rgb(226, 200, 194), a);
 
-    const int pw = 216, ph = 90;
-    const int px = 160 - pw / 2, py = 86;
+    const int pw = 216, ph = 96;
+    const int px = 160 - pw / 2, py = 82;
     hud::drawPanel(out, px, py, pw, ph, 0.84f * a);
     if (a < 0.5f) return;
 
-    char val[5][40];
+    char val[6][40];
     const int secs = static_cast<int>(tripTime);
     std::snprintf(val[0], sizeof(val[0]), "%d:%02d", secs / 60, secs % 60);
     std::snprintf(val[1], sizeof(val[1]), "%.1f %s %.1f %s", static_cast<double>(progress * kTripKm), T8("ИЗ"),
@@ -1487,10 +1522,11 @@ void Game::State::renderResult(Canvas& out, bool victory) {
     std::snprintf(val[2], sizeof(val[2]), "%d", mini.fuelCollected());
     std::snprintf(val[3], sizeof(val[3]), "%d (%s %d)", photos, T8("В ЦЕЛЬ"), hits);
     std::snprintf(val[4], sizeof(val[4]), "%d", mini.crashes());
-    const char* labels[5] = {T8("Время в пути"), T8("Проехали"), T8("Канистры"), T8("Снимки"),
-                             T8("Аварии в игре")};
+    std::snprintf(val[5], sizeof(val[5]), "%s", diff().name);
+    const char* labels[6] = {T8("Время в пути"), T8("Проехали"), T8("Канистры"), T8("Снимки"),
+                             T8("Аварии в игре"), T8("Сложность")};
     int ry = py + 8;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 6; ++i) {
         font::drawTextShadow(out, px + 20, ry, labels[i], hud::kTextDim, hud::kShadow);
         textRight(out, px + pw - 20, ry, val[i], hud::kText);
         ry += 11;
