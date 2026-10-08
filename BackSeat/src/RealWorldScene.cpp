@@ -10,10 +10,12 @@
 //       (тест трафарета), поэтому ничего не вылезает на обивку;
 //    4) передний план салона: уплотнители, приборная панель, зеркало,
 //       родители, кресла (неподвижное тоже «запечено»; трафарет помечается
-//       как «салон»);
+//       как «салон»); в бесконечном режиме родители оборачиваются к ребёнку
+//       (facelessTurn) — безликие головы, перегибаясь, ложатся поверх кресел;
 //    5) свет: тёплая полоса проезжающего фонаря и холодная — встречной машины;
 //    6) пыль с потолка, консоль на коленях, пост-обработка (виньетка + зерно);
-//    7) видоискатель, полароид и HUD — поверх всего, без пост-эффектов.
+//    7) видоискатель, полароид и HUD — поверх всего, без пост-эффектов
+//       (в бесконечном режиме вместо пути домой — пройденные километры).
 //
 //  Вся «косметика» (прокрутка пейзажа, фонари, тряска, пыль, полароид) живёт в
 //  State и меняется только в update()/событиях; render() — константный и
@@ -2284,6 +2286,256 @@ void drawHeadBack(Canvas& out, const HeadLook& h, bool bun) {
     }
 }
 
+// ============================================================================
+//  Безликие родители (бесконечный режим)
+// ============================================================================
+// Родители медленно оборачиваются к ребёнку: затылок -> профиль -> лицо. Лица
+// нет: гладкая бледная кожа и лишь едва заметные впадины там, где должны быть
+// глаза, нос и рот. Голова рисуется попиксельно как повёрнутый эллипсоид:
+// для каждого пикселя считается нормаль, она переводится в координаты головы
+// (a — вбок, b — вниз, c — «вперёд лица»), и по ним решается, волосы это,
+// кожа или ухо.
+
+constexpr int kHeadrestTopY = 57; // выше этой строки спинки кресел ничего не закрывают
+
+// Проход отрисовки: 0 — за спинками кресел (как обычно), 1 — поверх них, когда
+// родитель перегибается к ребёнку. Во втором проходе граница «перед/за
+// подголовником» опускается сверху вниз по frontK — голова как будто
+// переползает через верх подголовника, без резкой смены порядка.
+struct HeadPass {
+    int pass = 0;
+    float frontK = 0.0f;
+};
+
+inline bool headPassAllows(const HeadPass& hp, int y) {
+    if (hp.pass == 0) return true;
+    return y >= kHeadrestTopY && static_cast<float>(y - kHeadrestTopY) < hp.frontK * 32.0f;
+}
+
+// Дешёвый «колокол» вместо exp(-q): (1 - q/4)^4, ноль при q >= 4.
+inline float softBump(float q) {
+    if (q >= 4.0f) return 0.0f;
+    const float u = 1.0f - 0.25f * q;
+    const float u2 = u * u;
+    return u2 * u2;
+}
+
+struct FacelessLook {
+    float cx = 0.0f, cy = 0.0f, rx = 12.0f, ry = 13.5f;
+    float roll = 0.0f;   // наклон головы набок, рад
+    float yaw = 0.0f;    // 0 — затылок к зрителю, 1 — лицо к зрителю
+    float side = 1.0f;   // куда идёт поворот: +1 — вправо (папа), -1 — влево (мама)
+    bool mom = false;
+    uint32_t hair = 0, hairHi = 0, rimL = 0, rimR = 0;
+    uint32_t earSkin = 0; // цвет ушей со спины (как в обычной позе)
+    uint32_t rim = 0;    // холодный контровой свет (от лобового стекла)
+    float rimK = 0.0f;
+    float fill = 0.0f;   // рассеянный свет со стороны ребёнка
+    float glow = 0.0f;   // экран консоли снизу
+    float amb = 1.0f;
+    std::array<uint32_t, 6> skin{}; // рампа кожи от тени к свету
+};
+
+// Бледная кожа: от почти чёрного к «восковому» светлому.
+const uint32_t kPaleSkin[6] = {rgb(10, 10, 16),   rgb(34, 33, 42),    rgb(66, 64, 72),
+                               rgb(104, 101, 104), rgb(146, 142, 138), rgb(194, 188, 176)};
+
+// Кусок волос (эллипс) с кромкой света, как у drawHairShape, но с маской прохода.
+void drawHairBlobMasked(Canvas& out, float cx, float cy, float rx, float ry, const FacelessLook& h,
+                        const HeadPass& hp) {
+    const int top = floori(cy - ry), bot = floori(cy + ry);
+    for (int y = top; y <= bot; ++y) {
+        const float dy = (static_cast<float>(y) + 0.5f - cy) / ry;
+        if (std::fabs(dy) >= 1.0f || !headPassAllows(hp, y)) continue;
+        const float half = rx * std::sqrt(1.0f - dy * dy);
+        const int xl = roundi(cx - half), xr = roundi(cx + half) - 1;
+        const float k = smoothstep(-0.5f, 0.6f, dy);
+        for (int x = xl; x <= xr; ++x) {
+            uint32_t c = h.hair;
+            if (x == xl) c = lerpColor(h.hair, h.rimL, k);
+            else if (x == xr) c = lerpColor(h.hair, h.rimR, k);
+            out.plot(x, y, c);
+        }
+    }
+}
+
+// Голова, повёрнутая на yaw. Рисует уши, пучок (у мамы) и саму голову.
+void drawFacelessHead(Canvas& out, const FacelessLook& h, const HeadPass& hp) {
+    const float phi = h.yaw * kPi;
+    // Направление «лица» и «вбок» в координатах экрана (z — к зрителю).
+    const float fx = std::sin(phi) * h.side, fz = -std::cos(phi);
+    const float ux = std::cos(phi), uz = std::sin(phi) * h.side;
+    const float cr = std::cos(h.roll), sr = std::sin(h.roll);
+    // Точка головы (в долях радиусов, локальные a/b/c) -> экран.
+    auto project = [&](float a, float b, float c, float& sx, float& sy, float& sz) {
+        const float lx = a * ux + c * fx, lz = a * uz + c * fz;
+        const float px = lx * h.rx, py = b * h.ry;
+        sx = h.cx + px * cr - py * sr;
+        sy = h.cy + px * sr + py * cr;
+        sz = lz;
+    };
+
+    // ---- Уши: торчат из-за контура головы, а в профиле ближнее ухо лежит
+    // поверх головы (у мамы уши скрываются под волосами) ----
+    auto drawEars = [&](bool nearSide) {
+        if (h.mom && h.yaw >= 0.3f) return;
+        for (int sgn = -1; sgn <= 1; sgn += 2) {
+            const float fs = static_cast<float>(sgn);
+            float ex = 0.0f, ey = 0.0f, ez = 0.0f;
+            project(fs * 0.98f, 0.28f, -0.05f, ex, ey, ez);
+            if (ez < -0.45f || (ez > 0.35f) != nearSide) continue;
+            const int ix = roundi(ex), iy = roundi(ey);
+            const uint32_t earC = lerpColor(h.earSkin, h.skin[2], smoothstep(0.2f, 0.8f, h.yaw));
+            for (int yy = -3; yy <= 3; ++yy) {
+                for (int xx = -2; xx <= 2; ++xx) {
+                    if (xx * xx * 9 + yy * yy * 4 > 36) continue;
+                    if (!headPassAllows(hp, iy + yy)) continue;
+                    const bool edge = (ex < h.cx) ? xx == -2 || (xx == -1 && std::abs(yy) == 2)
+                                                  : xx == 2 || (xx == 1 && std::abs(yy) == 2);
+                    out.plot(ix + xx, iy + yy, edge ? lerpColor(earC, h.rim, 0.5f * h.rimK + 0.2f) : earC);
+                }
+            }
+        }
+    };
+    drawEars(false);
+
+    // ---- Пучок мамы: на затылке; когда она обернулась — за головой ----
+    float bx = 0.0f, by = 0.0f, bz = 0.0f;
+    if (h.mom) {
+        project(0.0f, -0.88f, -0.5f, bx, by, bz);
+        if (bz <= 0.0f) drawHairBlobMasked(out, bx, by, 5.5f, 5.0f, h, hp);
+    }
+
+    // ---- Сама голова ----
+    const float ext = std::max(h.rx, h.ry) + 1.0f;
+    const int xa = floori(h.cx - ext), xb = floori(h.cx + ext) + 1;
+    const int ya = floori(h.cy - ext), yb = floori(h.cy + ext) + 1;
+    const float hairTop = h.mom ? -0.50f : -0.42f;
+    const float faceHalfW = h.mom ? 0.64f : 0.80f;
+    for (int y = ya; y <= yb; ++y) {
+        for (int x = xa; x <= xb; ++x) {
+            if (!headPassAllows(hp, y)) continue;
+            const float dx = static_cast<float>(x) + 0.5f - h.cx, dy = static_cast<float>(y) + 0.5f - h.cy;
+            const float ly = (-dx * sr + dy * cr) / h.ry;
+            // Голова сужается к подбородку (у лица сильнее, чем у затылка).
+            const float jaw = ly > 0.0f ? 1.0f - (0.10f + 0.10f * h.yaw) * ly * ly : 1.0f;
+            const float lx = (dx * cr + dy * sr) / (h.rx * jaw);
+            const float r2 = lx * lx + ly * ly;
+            if (r2 >= 1.0f) continue;
+            const float nz = std::sqrt(1.0f - r2);
+            const float a = lx * ux + nz * uz;
+            const float b = ly;
+            const float c = lx * fx + nz * fz;
+            const float hairline = hairTop + 0.32f * a * a;
+            const bool face = c > 0.14f && b > hairline && std::fabs(a) < faceHalfW;
+            uint32_t col;
+            if (face) {
+                // Освещение: рассеянный свет от ребёнка + экран консоли снизу.
+                const float lc = std::max(0.0f, 0.5f * ly + 0.866f * nz);
+                float level = h.amb * (0.08f + h.fill * (0.25f + 0.85f * nz * nz) + h.glow * lc * lc);
+                // Едва заметный рельеф: мягкие впадины глазниц, намёк на
+                // переносицу, тень под ней и там, где должен быть рот.
+                float relief = 0.0f;
+                for (int sgn = -1; sgn <= 1; sgn += 2) {
+                    const float da = a - static_cast<float>(sgn) * 0.33f, db = b + 0.02f;
+                    relief -= 0.30f * softBump((da * da + db * db * 1.3f) / 0.028f);
+                }
+                relief += 0.08f * softBump((a * a) / 0.006f) * smoothstep(-0.10f, 0.05f, b) *
+                          smoothstep(0.40f, 0.28f, b);
+                relief -= 0.14f * softBump(a * a / 0.012f + (b - 0.43f) * (b - 0.43f) / 0.004f);
+                relief -= 0.12f * softBump(a * a / 0.05f + (b - 0.63f) * (b - 0.63f) / 0.005f);
+                // Тень от волос у линии роста и на висках.
+                if (b - hairline < 0.08f) relief -= 0.15f;
+                level *= 1.0f + relief;
+                // Кожа гладкая: сплошной упорядоченный дизеринг между ступенями
+                // рампы (без резких полос, которые читались бы как черты лица).
+                col = rampPick(rampRow(h.skin.data(), 6, level), x, y);
+                // Холодный контровой свет из лобового стекла — тонкая кромка, сильнее сверху.
+                const float rimE = smoothstep(0.80f, 0.98f, r2) * h.rimK * (0.65f - 0.35f * ly);
+                if (rimE > 0.05f) col = lerpColor(col, h.rim, std::min(0.7f, rimE));
+            } else {
+                // Волосы: кромка света по контуру (сильнее внизу) и блик на макушке.
+                col = h.hair;
+                if (c < -0.2f && b < -0.5f && b > -0.92f && std::fabs(a) < 0.4f)
+                    col = lerpColor(h.hair, h.hairHi, 0.6f);
+                // Волосы прядями: от макушки вниз чуть светлее и темнее полосами.
+                if (c > 0.0f) {
+                    const float fan = a / (1.4f - b) * (h.mom ? 3.5f : 4.8f);
+                    if (fan - std::floor(fan) > 0.8f) col = lerpColor(col, h.hairHi, 0.35f);
+                    // Пробор у мамы — тонкая светлая линия посередине.
+                    if (h.mom && std::fabs(a) < 0.05f && b < hairline)
+                        col = lerpColor(h.hair, h.hairHi, 0.9f);
+                }
+                if (r2 > 0.80f) {
+                    const float k = smoothstep(-0.5f, 0.6f, ly) * smoothstep(0.80f, 0.98f, r2);
+                    col = lerpColor(col, lx < 0.0f ? h.rimL : h.rimR, k);
+                    const float rimE = smoothstep(0.88f, 0.99f, r2) * h.rimK * 0.45f * (0.5f - 0.5f * ly);
+                    if (rimE > 0.02f) col = lerpColor(col, h.rim, rimE);
+                }
+            }
+            out.plot(x, y, col);
+        }
+    }
+    drawEars(true);
+    if (h.mom && bz > 0.0f) {
+        drawHairBlobMasked(out, bx, by, 5.5f, 5.0f, h, hp);
+        if (hp.pass == 0) out.fillRect(roundi(bx) - 4, roundi(by) + 3, 8, 1, rgb(70, 44, 34));
+    }
+}
+
+// Шея и плечи родителя, перегнувшегося через спинку к ребёнку (второй проход).
+void drawLeanBody(Canvas& out, const FacelessLook& h, float lean, uint32_t cloth, const HeadPass& hp) {
+    if (lean <= 0.01f) return;
+    const float topY = h.cy + h.ry * 0.55f, botY = 81.0f;
+    const float topX = h.cx, botX = h.cx - h.side * 4.0f;
+    // Плечи низким горбом поднимаются над верхом спинки; кромку ловит свет.
+    const float shY = lerpf(92.0f, 86.0f, lean), shRx = h.rx * 1.35f, shRy = 7.0f;
+    const int shTop = floori(shY - shRy);
+    for (int y = shTop; y <= 82; ++y) {
+        const float dy = (static_cast<float>(y) + 0.5f - shY) / shRy;
+        if (std::fabs(dy) >= 1.0f) continue;
+        const float half = shRx * std::sqrt(1.0f - dy * dy);
+        const int xl = roundi(botX - half), xr = roundi(botX + half) - 1;
+        for (int x = xl; x <= xr; ++x) {
+            if (!headPassAllows(hp, y)) continue;
+            const bool edge = y == shTop + 1 || ((x == xl || x == xr) && y < shTop + 4);
+            out.plot(x, y, edge ? lerpColor(cloth, h.rim, 0.15f + 0.2f * h.rimK) : cloth);
+        }
+    }
+    // Шея: от подбородка вниз, к основанию сдвигается к своему креслу.
+    const int ya = floori(topY), yb = floori(botY);
+    for (int y = ya; y <= yb; ++y) {
+        const float t = saturate((static_cast<float>(y) - topY) / (botY - topY));
+        const float cx = lerpf(topX, botX, t), hw = h.rx * lerpf(0.27f, 0.33f, t);
+        // Под подбородком — глубокая тень, ниже шею чуть подсвечивает консоль.
+        const float level = h.amb * (0.03f + h.fill * 0.18f + h.glow * 0.30f * t);
+        const int xl = roundi(cx - hw), xr = roundi(cx + hw) - 1;
+        for (int x = xl; x <= xr; ++x) {
+            if (!headPassAllows(hp, y)) continue;
+            uint32_t c = rampPick(rampRow(h.skin.data(), 6, level), x, y);
+            if (x == xl || x == xr) c = lerpColor(c, h.rim, 0.12f * h.rimK);
+            out.plot(x, y, c);
+        }
+    }
+}
+
+// Пальцы, вцепившиеся в верх спинки со стороны родителя (видны поверх кромки).
+void drawGripHand(Canvas& out, int x0, float k, const FacelessLook& h) {
+    if (k <= 0.02f) return;
+    const int len = clampi(roundi(1.0f + 3.0f * k), 1, 4);
+    const uint32_t knuckle = bandRamp(h.skin.data(), 6, h.amb * (0.10f + h.fill * 0.6f), x0, 79);
+    const float fingerL = h.amb * (0.16f + h.fill * 0.7f + h.glow * 0.4f);
+    const uint32_t finger = bandRamp(h.skin.data(), 6, fingerL, x0, 80);
+    out.fillRect(x0, 79, 7, 1, knuckle);
+    for (int i = 0; i < 4; ++i) {
+        const int fx = x0 + i * 2;
+        const int l = std::max(1, len - (i == 0 || i == 3 ? 1 : 0));
+        out.fillRect(fx, 80, 1, l, finger);
+        out.plot(fx, 80 + l - 1, lerpColor(finger, h.rim, 0.3f)); // ноготь ловит свет
+        if (i < 3) out.fillRect(fx + 1, 80, 1, std::max(1, l - 1), rgb(6, 6, 10));
+    }
+}
+
 const uint32_t kSeatRamp[5] = {rgb(9, 9, 14), rgb(15, 15, 22), rgb(22, 22, 31), rgb(30, 30, 41),
                                rgb(40, 40, 53)};
 
@@ -2424,14 +2676,47 @@ void blitBack(Canvas& out, const SceneData& s, float amb) {
     }
 }
 
+// Параметры безликой головы для текущего кадра (общие для обоих родителей).
+FacelessLook facelessBase(const Frame& f, float backLight) {
+    FacelessLook h;
+    h.amb = f.amb;
+    // Свет со стороны ребёнка: луна в заднем стекле плюс фонарь за боковыми окнами.
+    h.fill = 0.26f + 0.06f * f.light;
+    h.glow = f.v->showConsole ? 0.30f : 0.06f;
+    h.rim = rgb(150, 172, 226);
+    h.rimK = 0.50f + 0.35f * backLight;
+    // Экран консоли на коленях слегка зеленит кожу.
+    const float tealK = f.v->showConsole ? 0.10f : 0.0f;
+    for (size_t i = 0; i < h.skin.size(); ++i) h.skin[i] = litColor(kPaleSkin[i], kTeal, tealK);
+    return h;
+}
+
 void drawParentsAndSeats(Canvas& out, const Frame& f, const Parents& p) {
     const float t = f.time;
-    const float tension = saturate(p.tension());
     const float backLight = 0.35f * f.beams + 0.6f * f.frontLight + 0.5f * f.carGlare;
+    // Безликий поворот: пока он идёт, родители молчат и не двигаются — их
+    // обычная анимация (кивки, повороты, дрожь) за первые проценты гаснет.
+    const float turnT = saturate(f.v->facelessTurn);
+    const float alive = 1.0f - smoothstep(0.0f, 0.08f, turnT);
+    const float tension = saturate(p.tension()) * alive;
+    const float yaw = smoothstep(0.06f, 0.85f, turnT);
+    const float lean = smoothstep(0.45f, 1.0f, turnT);
+    const float twist = smoothstep(0.10f, 0.80f, turnT);
+    HeadPass front;
+    front.pass = 1;
+    front.frontK = smoothstep(0.50f, 0.85f, turnT);
+    FacelessLook dadF, momF;
+    uint32_t dadCloth = 0, momCloth = 0;
+    // Длинные волосы мамы ниже плеч: обрамляют лицо, когда она обернулась.
+    auto momLongHair = [&](const HeadPass& hp) {
+        const float sc = 1.0f + 0.12f * lean;
+        drawHairBlobMasked(out, momF.cx, momF.cy + (6.0f + 2.0f * yaw) * sc, (13.0f - 0.5f * yaw) * sc,
+                           (9.0f + 2.0f * yaw) * sc, momF, hp);
+    };
     // ---- Папа (слева, водитель): короткая стрижка, широкие плечи ----
     {
-        const float talk = saturate(p.talk(Speaker::Dad));
-        const float turn = clampf(p.headTurn(Speaker::Dad), -1.0f, 1.0f);
+        const float talk = saturate(p.talk(Speaker::Dad)) * alive;
+        const float turn = clampf(p.headTurn(Speaker::Dad), -1.0f, 1.0f) * alive;
         const float bob = -std::fabs(std::sin(t * 7.3f)) * talk * 1.4f;
         const float shake = tension > 0.6f ? std::sin(t * 13.0f) * 0.6f * talk : 0.0f;
         HeadLook h;
@@ -2447,16 +2732,35 @@ void drawParentsAndSeats(Canvas& out, const Frame& f, const Parents& p) {
         h.rimR =
             lerpColor(h.hair, litColor(rgb(70, 66, 62), kTeal, 0.25f * f.engine), 0.35f + 0.45f * backLight);
         const uint32_t jacket = scaleColor(rgb(25, 26, 34), f.amb);
-        // Плечи шире спинки кресла.
-        out.fillEllipse(63, 89, 10, 9, jacket);
-        out.fillEllipse(147, 89, 10, 9, jacket);
+        dadCloth = jacket;
+        // Плечи шире спинки кресла; при повороте внутреннее плечо поднимается.
+        out.fillEllipse(63 + roundi(3.0f * twist), 89 + roundi(2.0f * twist), 10, 9, jacket);
+        out.fillEllipse(147 + roundi(2.0f * twist), 89 - roundi(4.0f * twist), 10 + roundi(twist), 9, jacket);
         out.drawLine(55, 83, 60, 80, litColor(jacket, kColdLight, 0.5f));
-        drawHeadBack(out, h, false);
+        if (turnT <= 0.0f) {
+            drawHeadBack(out, h, false);
+        } else {
+            dadF = facelessBase(f, backLight);
+            const float sc = 1.0f + 0.12f * lean;
+            dadF.cx = h.cx + 12.0f * lean;
+            dadF.cy = h.cy + 6.0f * lean;
+            dadF.rx = h.rx * sc;
+            dadF.ry = h.ry * sc;
+            dadF.roll = 0.14f * lean;
+            dadF.yaw = yaw;
+            dadF.side = 1.0f;
+            dadF.hair = h.hair;
+            dadF.hairHi = h.hairHi;
+            dadF.rimL = h.rimL;
+            dadF.rimR = h.rimR;
+            dadF.earSkin = h.skin;
+            drawFacelessHead(out, dadF, HeadPass{});
+        }
     }
     // ---- Мама (справа): пучок волос ----
     {
-        const float talk = saturate(p.talk(Speaker::Mom));
-        const float turn = clampf(p.headTurn(Speaker::Mom), -1.0f, 1.0f);
+        const float talk = saturate(p.talk(Speaker::Mom)) * alive;
+        const float turn = clampf(p.headTurn(Speaker::Mom), -1.0f, 1.0f) * alive;
         const float bob = -std::fabs(std::sin(t * 8.1f + 1.3f)) * talk * 1.3f;
         HeadLook h;
         h.cx = 215.0f + turn * 3.0f;
@@ -2469,11 +2773,43 @@ void drawParentsAndSeats(Canvas& out, const Frame& f, const Parents& p) {
         h.skin = scaleColor(rgb(46, 36, 34), f.amb);
         h.rimL = lerpColor(h.hair, rgb(120, 96, 80), 0.35f + 0.5f * backLight);
         h.rimR = lerpColor(h.hair, rgb(140, 110, 88), 0.35f + 0.5f * backLight);
-        // Пышные волосы по бокам.
-        drawHairShape(out, h.cx, h.cy + 6.0f, 13.0f, 9.0f, h);
-        drawHeadBack(out, h, true);
+        momCloth = scaleColor(rgb(38, 26, 34), f.amb);
+        if (turnT <= 0.0f) {
+            // Пышные волосы по бокам.
+            drawHairShape(out, h.cx, h.cy + 6.0f, 13.0f, 9.0f, h);
+            drawHeadBack(out, h, true);
+        } else {
+            momF = facelessBase(f, backLight);
+            const float sc = 1.0f + 0.12f * lean;
+            momF.cx = h.cx - 12.0f * lean;
+            momF.cy = h.cy + 5.0f * lean;
+            momF.rx = h.rx * sc;
+            momF.ry = h.ry * sc;
+            momF.roll = -0.18f * lean;
+            momF.yaw = yaw;
+            momF.side = -1.0f;
+            momF.mom = true;
+            momF.hair = h.hair;
+            momF.hairHi = h.hairHi;
+            momF.rimL = h.rimL;
+            momF.rimR = h.rimR;
+            momF.earSkin = h.skin;
+            momLongHair(HeadPass{});
+            drawFacelessHead(out, momF, HeadPass{});
+        }
     }
     blitLayer(out, f.v->showConsole ? f.s->seatLayerLit : f.s->seatLayer, f.amb, 96);
+    if (turnT > 0.0f && front.frontK > 0.0f) {
+        // Второй проход: родители перегибаются через спинки — поверх кресел.
+        drawLeanBody(out, dadF, lean, dadCloth, front);
+        drawFacelessHead(out, dadF, front);
+        drawLeanBody(out, momF, lean, momCloth, front);
+        momLongHair(front);
+        drawFacelessHead(out, momF, front);
+        const float grip = smoothstep(0.72f, 1.0f, turnT);
+        drawGripHand(out, 129, grip, dadF);
+        drawGripHand(out, 185, grip, momF);
+    }
 }
 
 // ============================================================================

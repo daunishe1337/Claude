@@ -297,7 +297,7 @@ void drawEndlessBar(Canvas& c, int x, int y, int w, float kmDriven, float time) 
     for (int i = 0; i < w; ++i) {
         if (((i + scroll) % 6) < 3) c.plot(x + i, by, scaleColor(kTrip, 0.62f));
     }
-    // Края уходят в темноту (упорядоченный дизеринг по 8 пикселей).
+    // Края уходят в темноту (плавное затемнение по 8 пикселей): дороге нет конца.
     for (int i = 0; i < 8; ++i) {
         const float a = 1.0f - static_cast<float>(i) / 8.0f;
         c.blendRect(x + i, by - 1, 1, 4, kShadow, a);
@@ -319,9 +319,11 @@ void drawEndlessBar(Canvas& c, int x, int y, int w, float kmDriven, float time) 
     int glitchAt = -1;
     if ((hsh & 63u) == 7u) {
         const int len = static_cast<int>(std::strlen(buf));
-        const int pick = static_cast<int>((hsh >> 8) % static_cast<uint32_t>(std::max(1, len)));
+        int pick = static_cast<int>((hsh >> 8) % static_cast<uint32_t>(std::max(1, len)));
+        if (buf[pick] == '.') pick = (pick + 1) % std::max(1, len); // точку не трогаем
         if (buf[pick] >= '0' && buf[pick] <= '9') {
-            buf[pick] = static_cast<char>('0' + static_cast<int>(((buf[pick] - '0') + 1 + ((hsh >> 16) % 8u)) % 10));
+            const int shift = 1 + static_cast<int>((hsh >> 16) % 8u);
+            buf[pick] = static_cast<char>('0' + ((buf[pick] - '0') + shift) % 10);
             glitchAt = pick;
         }
     }
