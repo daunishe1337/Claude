@@ -99,6 +99,7 @@ public:
     bool pill = false;
     bool password = false;
     bool borderless = false;
+    Color textColor = Color(0, 0, 0, 0); // прозрачный — цвет текста темы
     std::function<void(const std::wstring&)> onChange;
     std::function<void()> onEnter;
     std::function<void()> onEscape;

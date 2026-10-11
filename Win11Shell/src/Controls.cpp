@@ -359,6 +359,7 @@ void TextBox::Draw(Renderer& r)
 
     const Rect ta = TextArea();
     const std::wstring disp = Display();
+    const Color fg = textColor.a ? textColor : p.text;
     const float lh = r.LineHeight(fontSize);
     const float ty = b.CenterY() - lh * 0.5f;
 
@@ -380,7 +381,7 @@ void TextBox::Draw(Renderer& r)
     else
     {
         const Rect tr{ta.x - m_scrollX, b.y, ta.w + m_scrollX + 1000.0f, b.h};
-        r.Text(disp, tr, p.text, fontSize, FontWeight::Regular, TextFlags::VCenter | TextFlags::NoEllipsis);
+        r.Text(disp, tr, fg, fontSize, FontWeight::Regular, TextFlags::VCenter | TextFlags::NoEllipsis);
         if (HasSelection() && m_focused)
         {
             const int s0 = std::min(m_caret, m_anchor), s1 = std::max(m_caret, m_anchor);
@@ -400,7 +401,7 @@ void TextBox::Draw(Renderer& r)
         if (std::fmod(since, 1.06) < 0.53)
         {
             const float cx = std::floor(ta.x - m_scrollX + caretX) + 0.5f;
-            r.Line(cx, ty + 1.0f, cx, ty + lh - 1.0f, p.text, 1.0f, false);
+            r.Line(cx, ty + 1.0f, cx, ty + lh - 1.0f, fg, 1.0f, false);
         }
     }
     r.PopClip();

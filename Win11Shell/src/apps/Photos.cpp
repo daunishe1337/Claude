@@ -386,6 +386,11 @@ public:
         x -= 44.0f;
         add(Icon::Heart, L"Добавить в избранное", x, [this]() { m_fav = !m_fav; });
         x -= 44.0f;
+        add(Icon::Brush, L"Изменить в Paint", x, [this]() {
+            if (m_current)
+                GetShell().Launch(AppId::Paint, VirtualFS::NodeArg(m_current));
+        });
+        x -= 44.0f;
         add(Icon::RotateRight, L"Повернуть", x, [this]() { m_rot = (m_rot + 1) % 4; });
         x -= 52.0f;
         add(Icon::ZoomIn, L"Увеличить", x, [this]() { m_zoom = std::min(8.0f, m_zoom * 1.25f); });

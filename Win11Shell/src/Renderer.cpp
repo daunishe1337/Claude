@@ -606,10 +606,25 @@ void Renderer::Shadow(const Rect& r, float radius, float blur, float offsetY, fl
     const float sigma = std::max(0.6f, blur * s * 0.5f);
     const float ext = sigma * 2.6f;
 
-    const int bx0 = std::max(0, static_cast<int>(std::floor(px0 - ext)));
-    const int by0 = std::max(0, static_cast<int>(std::floor(std::min(py0, sy0) - ext)));
-    const int bx1 = std::min(m_pxW, static_cast<int>(std::ceil(px1 + ext)));
-    const int by1 = std::min(m_pxH, static_cast<int>(std::ceil(sy1 + ext)));
+    int bx0 = std::max(0, static_cast<int>(std::floor(px0 - ext)));
+    int by0 = std::max(0, static_cast<int>(std::floor(std::min(py0, sy0) - ext)));
+    int bx1 = std::min(m_pxW, static_cast<int>(std::ceil(px1 + ext)));
+    int by1 = std::min(m_pxH, static_cast<int>(std::ceil(sy1 + ext)));
+    // Тень пишется прямо в пиксели, поэтому текущую область отсечения нужно учесть вручную.
+    Gdiplus::RectF clip;
+    if (m_g->GetClipBounds(&clip) == Gdiplus::Ok)
+    {
+        const float cx0 = clip.X * s + m_xf.tx, cy0 = clip.Y * s + m_xf.ty;
+        const float cx1 = cx0 + clip.Width * s, cy1 = cy0 + clip.Height * s;
+        if (cx0 > static_cast<float>(bx0))
+            bx0 = static_cast<int>(std::min(cx0, static_cast<float>(m_pxW)));
+        if (cy0 > static_cast<float>(by0))
+            by0 = static_cast<int>(std::min(cy0, static_cast<float>(m_pxH)));
+        if (cx1 < static_cast<float>(bx1))
+            bx1 = static_cast<int>(std::max(cx1, 0.0f));
+        if (cy1 < static_cast<float>(by1))
+            by1 = static_cast<int>(std::max(cy1, 0.0f));
+    }
     if (bx0 >= bx1 || by0 >= by1)
         return;
 
