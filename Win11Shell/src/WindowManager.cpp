@@ -118,7 +118,7 @@ bool Window::OnChar(wchar_t ch) { return m_ui.OnChar(ch); }
 CursorType Window::Cursor(Point local) const
 {
     if (m_dialogActive)
-        return CursorType::Arrow;
+        return m_dialogUi.Cursor(local);
     return m_ui.Cursor(local);
 }
 
@@ -146,6 +146,7 @@ void Window::ShowDialog(std::wstring title, std::wstring message, std::vector<Di
     m_dialogTitle = std::move(title);
     m_dialogText = std::move(message);
     m_dialogResult = std::move(onResult);
+    m_dialogInput = nullptr;
     m_dialogUi.Clear();
     for (size_t i = 0; i < buttons.size(); ++i)
     {
@@ -153,7 +154,9 @@ void Window::ShowDialog(std::wstring title, std::wstring message, std::vector<Di
                                          buttons[i].accent ? ButtonStyle::Accent : ButtonStyle::Standard);
         const int index = static_cast<int>(i);
         b->onClick = [this, index]() {
+            m_dialogInputText = m_dialogInput ? m_dialogInput->Text() : std::wstring();
             m_dialogActive = false;
+            m_dialogInput = nullptr;
             m_dialogUi.Clear();
             auto cb = m_dialogResult;
             m_dialogResult = nullptr;
@@ -165,22 +168,42 @@ void Window::ShowDialog(std::wstring title, std::wstring message, std::vector<Di
     LayoutDialog();
 }
 
+void Window::ShowInputDialog(std::wstring title, std::wstring message, std::wstring initial, std::wstring okText,
+                             std::function<void(const std::wstring&)> onOk)
+{
+    ShowDialog(std::move(title), std::move(message), {{std::move(okText), true}, {L"Отмена", false}},
+               [this, onOk](int r) {
+                   if (r == 0 && onOk)
+                       onOk(m_dialogInputText);
+               });
+    m_dialogInput = m_dialogUi.Add<TextBox>();
+    m_dialogInput->SetText(initial);
+    m_dialogInput->SelectAll();
+    m_dialogUi.SetFocus(m_dialogInput);
+    LayoutDialog();
+}
+
 void Window::LayoutDialog()
 {
     Renderer& r = Renderer::Get();
     const Rect client = ClientRect();
     const float w = std::min(460.0f, client.w - 40.0f);
-    const float textH = r.TextHeight(m_dialogText, 14.0f, FontWeight::Regular, w - 48.0f);
-    const float h = 24.0f + 28.0f + 12.0f + textH + 24.0f + 80.0f;
+    const float textH = m_dialogText.empty() ? 0.0f : r.TextHeight(m_dialogText, 14.0f, FontWeight::Regular, w - 48.0f);
+    const float inputH = m_dialogInput ? 48.0f : 0.0f;
+    const float h = 24.0f + 28.0f + 12.0f + textH + inputH + 24.0f + 80.0f;
     m_dialogRect = {std::floor(client.x + (client.w - w) * 0.5f), std::floor(client.y + (client.h - h) * 0.5f), w, h};
+    if (m_dialogInput)
+        m_dialogInput->SetBounds({m_dialogRect.x + 24.0f, m_dialogRect.y + 64.0f + textH + 12.0f, w - 48.0f, 32.0f});
     const auto& kids = m_dialogUi.Children();
-    const float n = static_cast<float>(kids.size());
+    const float n = static_cast<float>(kids.size()) - (m_dialogInput ? 1.0f : 0.0f);
     if (n <= 0.0f)
         return;
     const float bw = (w - 48.0f - 8.0f * (n - 1.0f)) / n;
     float x = m_dialogRect.x + 24.0f;
     for (auto& k : kids)
     {
+        if (k.get() == m_dialogInput)
+            continue;
         k->SetBounds({x, m_dialogRect.Bottom() - 56.0f, bw, 32.0f});
         x += bw + 8.0f;
     }
@@ -1281,21 +1304,25 @@ bool WindowManager::KeyDown(UINT vk, const KeyMods& mods)
     Widget::Origin() = {w->m_frame.x, w->m_frame.y};
     if (w->m_dialogActive)
     {
-        const auto& kids = w->m_dialogUi.Children();
-        if (kids.empty())
-            return true;
-        if (vk == VK_RETURN)
+        // Кнопки — все дочерние элементы, кроме поля ввода.
+        std::vector<Button*> buttons;
+        for (auto& k : w->m_dialogUi.Children())
         {
-            auto* b = dynamic_cast<Button*>(kids.front().get());
-            if (b && b->onClick)
-                PostAction(b->onClick);
+            if (auto* b = dynamic_cast<Button*>(k.get()))
+                buttons.push_back(b);
         }
-        else if (vk == VK_ESCAPE)
+        if (vk == VK_RETURN && !buttons.empty())
         {
-            auto* b = dynamic_cast<Button*>(kids.back().get());
-            if (b && b->onClick)
-                PostAction(b->onClick);
+            if (buttons.front()->onClick)
+                PostAction(buttons.front()->onClick);
         }
+        else if (vk == VK_ESCAPE && !buttons.empty())
+        {
+            if (buttons.back()->onClick)
+                PostAction(buttons.back()->onClick);
+        }
+        else if (w->m_dialogInput)
+            w->m_dialogUi.OnKeyDown(vk, mods);
         return true;
     }
     return w->OnKeyDown(vk, mods);
@@ -1304,8 +1331,14 @@ bool WindowManager::KeyDown(UINT vk, const KeyMods& mods)
 bool WindowManager::Char(wchar_t ch)
 {
     Window* w = m_active;
-    if (!w || w->m_dialogActive)
-        return w != nullptr;
+    if (w && w->m_dialogActive)
+    {
+        if (w->m_dialogInput)
+            w->m_dialogUi.OnChar(ch);
+        return true;
+    }
+    if (!w)
+        return false;
     return w->OnChar(ch);
 }
 

@@ -89,6 +89,9 @@ public:
     void Activate();
     void ShowDialog(std::wstring title, std::wstring message, std::vector<DialogButton> buttons,
                     std::function<void(int)> onResult);
+    // Диалог с полем ввода: onOk получает введённый текст (не вызывается при отмене).
+    void ShowInputDialog(std::wstring title, std::wstring message, std::wstring initial, std::wstring okText,
+                         std::function<void(const std::wstring&)> onOk);
     bool HasDialog() const { return m_dialogActive; }
     Panel& UI() { return m_ui; }
 
@@ -135,6 +138,8 @@ private:
     std::wstring m_dialogText;
     std::function<void(int)> m_dialogResult;
     Panel m_dialogUi;
+    TextBox* m_dialogInput = nullptr;
+    std::wstring m_dialogInputText;
     Rect m_dialogRect;
     Tween m_dialogAnim;
     void LayoutDialog();

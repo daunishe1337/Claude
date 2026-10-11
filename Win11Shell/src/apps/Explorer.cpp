@@ -2321,7 +2321,7 @@ private:
     CursorType Cursor(Point local) const override
     {
         if (HasDialog())
-            return CursorType::Arrow;
+            return Window::Cursor(local);
         if (m_address->Visible() && m_address->Bounds().Contains(local))
             return CursorType::IBeam;
         return m_ui.Cursor(local);

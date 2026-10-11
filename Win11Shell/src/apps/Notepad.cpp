@@ -1960,7 +1960,7 @@ private:
     CursorType Cursor(Point local) const override
     {
         if (HasDialog())
-            return CursorType::Arrow;
+            return Window::Cursor(local);
         if (m_overlay != Overlay::None)
             return m_ovUi.Cursor(local);
         if (m_dragBar != 0)
