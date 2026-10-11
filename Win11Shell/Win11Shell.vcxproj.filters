@@ -1,0 +1,185 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="Исходные файлы\Приложения">
+      <UniqueIdentifier>{A7C3E2D1-5B4F-4E8A-9C61-3F2D8B7E6A01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Заголовочные файлы">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Заголовочные файлы\Приложения">
+      <UniqueIdentifier>{B8D4F3E2-6C5A-4F9B-AD72-4E3C9C8F7B12}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Apps.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ContextMenu.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Controls.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Desktop.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Flyouts.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Icons.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Overlays.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shell.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StartMenu.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Taskbar.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualFS.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowManager.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Browser.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Calculator.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Calendar.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Clock.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Dialogs.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Explorer.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\MediaPlayer.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Notepad.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Paint.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Photos.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Placeholder.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Settings.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\TaskManager.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Terminal.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+    <ClCompile Include="src\apps\Weather.cpp">
+      <Filter>Исходные файлы\Приложения</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Apps.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ContextMenu.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Controls.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Desktop.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Flyouts.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Icons.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Overlays.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shell.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StartMenu.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Taskbar.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Theme.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VirtualFS.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Widget.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WindowManager.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\AppFactories.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\Cities.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\ImmUi.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\Photos.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\SysInfo.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\TabStrip.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\WeatherData.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+    <ClInclude Include="src\apps\WorldMap.h">
+      <Filter>Заголовочные файлы\Приложения</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

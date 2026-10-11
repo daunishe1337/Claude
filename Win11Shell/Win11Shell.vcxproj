@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{6B2E7A41-3C9D-4F58-9E1A-7D4C2B8F5A11}</ProjectGuid>
+    <RootNamespace>Win11Shell</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 /permissive- %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;UNICODE;_UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      
+      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;winmm.lib;user32.lib;gdi32.lib;advapi32.lib;ole32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 /permissive- %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;UNICODE;_UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization><FunctionLevelLinking>true</FunctionLevelLinking><IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding><OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;winmm.lib;user32.lib;gdi32.lib;advapi32.lib;ole32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Apps.cpp" />
+    <ClCompile Include="src\Common.cpp" />
+    <ClCompile Include="src\ContextMenu.cpp" />
+    <ClCompile Include="src\Controls.cpp" />
+    <ClCompile Include="src\Desktop.cpp" />
+    <ClCompile Include="src\Flyouts.cpp" />
+    <ClCompile Include="src\Icons.cpp" />
+    <ClCompile Include="src\Overlays.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\Shell.cpp" />
+    <ClCompile Include="src\StartMenu.cpp" />
+    <ClCompile Include="src\Taskbar.cpp" />
+    <ClCompile Include="src\VirtualFS.cpp" />
+    <ClCompile Include="src\WindowManager.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\apps\Browser.cpp" />
+    <ClCompile Include="src\apps\Calculator.cpp" />
+    <ClCompile Include="src\apps\Calendar.cpp" />
+    <ClCompile Include="src\apps\Clock.cpp" />
+    <ClCompile Include="src\apps\Dialogs.cpp" />
+    <ClCompile Include="src\apps\Explorer.cpp" />
+    <ClCompile Include="src\apps\MediaPlayer.cpp" />
+    <ClCompile Include="src\apps\Notepad.cpp" />
+    <ClCompile Include="src\apps\Paint.cpp" />
+    <ClCompile Include="src\apps\Photos.cpp" />
+    <ClCompile Include="src\apps\Placeholder.cpp" />
+    <ClCompile Include="src\apps\Settings.cpp" />
+    <ClCompile Include="src\apps\TaskManager.cpp" />
+    <ClCompile Include="src\apps\Terminal.cpp" />
+    <ClCompile Include="src\apps\Weather.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Apps.h" />
+    <ClInclude Include="src\Common.h" />
+    <ClInclude Include="src\ContextMenu.h" />
+    <ClInclude Include="src\Controls.h" />
+    <ClInclude Include="src\Desktop.h" />
+    <ClInclude Include="src\Flyouts.h" />
+    <ClInclude Include="src\Icons.h" />
+    <ClInclude Include="src\Overlays.h" />
+    <ClInclude Include="src\Renderer.h" />
+    <ClInclude Include="src\Shell.h" />
+    <ClInclude Include="src\StartMenu.h" />
+    <ClInclude Include="src\Taskbar.h" />
+    <ClInclude Include="src\Theme.h" />
+    <ClInclude Include="src\VirtualFS.h" />
+    <ClInclude Include="src\Widget.h" />
+    <ClInclude Include="src\WindowManager.h" />
+    <ClInclude Include="src\apps\AppFactories.h" />
+    <ClInclude Include="src\apps\Cities.h" />
+    <ClInclude Include="src\apps\ImmUi.h" />
+    <ClInclude Include="src\apps\Photos.h" />
+    <ClInclude Include="src\apps\SysInfo.h" />
+    <ClInclude Include="src\apps\TabStrip.h" />
+    <ClInclude Include="src\apps\WeatherData.h" />
+    <ClInclude Include="src\apps\WorldMap.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
