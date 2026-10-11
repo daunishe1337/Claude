@@ -1,5 +1,7 @@
 ﻿#include "Taskbar.h"
 
+#include "apps/WeatherData.h"
+
 #include "StartMenu.h"
 
 namespace
@@ -323,14 +325,18 @@ void Taskbar::DrawItem(Renderer& r, const Item& it, int index)
     }
     case Kind::Widgets:
         bg(false);
-        if (st.taskbarCenter)
         {
-            r.DrawAppIcon(AppIcon::Weather, {rc.x + 8.0f, cy - 12.0f, 24.0f, 24.0f});
-            r.Text(L"17°C", {rc.x + 40.0f, rc.y + 4.0f, rc.w - 44.0f, 16.0f}, p.text, 12.0f);
-            r.Text(L"Облачно", {rc.x + 40.0f, rc.y + 20.0f, rc.w - 44.0f, 16.0f}, p.textSecondary, 12.0f);
+            // Текущая погода основного местоположения (та же модель, что и в приложении «Погода»).
+            const WeatherData::NowWx wx = WeatherData::Now(WeatherData::HomeCity());
+            if (st.taskbarCenter)
+            {
+                WeatherData::DrawIcon(r, {rc.x + 6.0f, cy - 14.0f, 28.0f, 28.0f}, wx.cond, wx.night, !p.dark);
+                r.Text(WeatherData::DegUnit(wx.temp), {rc.x + 40.0f, rc.y + 4.0f, rc.w - 44.0f, 16.0f}, p.text, 12.0f);
+                r.Text(WeatherData::CondText(wx.cond, wx.night), {rc.x + 40.0f, rc.y + 20.0f, rc.w - 44.0f, 16.0f}, p.textSecondary, 12.0f);
+            }
+            else
+                WeatherData::DrawIcon(r, {cx - 14.0f, cy - 14.0f, 28.0f, 28.0f}, wx.cond, wx.night, !p.dark);
         }
-        else
-            r.DrawAppIcon(AppIcon::Weather, {cx - 12.0f, cy - 12.0f, 24.0f, 24.0f});
         break;
     case Kind::App:
     {

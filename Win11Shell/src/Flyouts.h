@@ -143,12 +143,15 @@ public:
     Rect Bounds() const override;
     void Draw(Renderer& r) override;
     bool MouseWheel(const MouseEvent& e) override;
+    void MouseUp(const MouseEvent& e) override;
+    CursorType Cursor(Point p) const override;
 
 protected:
     void OnOpen() override;
 
 private:
     Tween m_scroll;
+    Rect m_weatherCard; // экранные координаты карточки погоды (открывает «Погоду»)
 };
 
 // ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 
 #include "Taskbar.h"
 #include "apps/AppFactories.h"
+#include "apps/WeatherData.h"
 #include "apps/Photos.h"
 
 // ===========================================================================
@@ -884,6 +885,23 @@ void WidgetsBoard::OnOpen()
     };
 }
 
+void WidgetsBoard::MouseUp(const MouseEvent& e)
+{
+    Flyout::MouseUp(e);
+    if (e.button == MouseButton::Left && m_weatherCard.Contains(e.pos))
+    {
+        Close();
+        GetShell().Launch(AppId::Weather, L"");
+    }
+}
+
+CursorType WidgetsBoard::Cursor(Point p) const
+{
+    if (m_weatherCard.Contains(p))
+        return CursorType::Hand;
+    return Flyout::Cursor(p);
+}
+
 bool WidgetsBoard::MouseWheel(const MouseEvent& e)
 {
     m_scroll.Set(Clamp(m_scroll.Target() - e.wheel * 90.0f, 0.0f, 420.0f), 0.25f);
@@ -909,26 +927,49 @@ void WidgetsBoard::Draw(Renderer& r)
     const float x0 = b.x + 24.0f, x1 = x0 + colW + 16.0f;
     float y = area.y + 8.0f;
 
-    // Погода
+    // Погода (модель WeatherData для основного местоположения)
     const Rect wc{x0, y, colW, 300.0f};
-    r.FillGradientV(wc, 8.0f, Color::Hex(0x2C78DC), Color::Hex(0x5FB0FA));
-    r.Text(L"Погода", {wc.x + 16.0f, wc.y + 12.0f, wc.w - 32.0f, 20.0f}, Color(255, 255, 255, 0xD0), 12.0f);
-    r.Text(L"Москва", {wc.x + 16.0f, wc.y + 32.0f, wc.w - 32.0f, 22.0f}, Color(255, 255, 255), 14.0f, FontWeight::Semibold);
-    r.DrawAppIcon(AppIcon::Weather, {wc.x + 16.0f, wc.y + 68.0f, 64.0f, 64.0f});
-    r.Text(L"17°", {wc.x + 92.0f, wc.y + 64.0f, 120.0f, 64.0f}, Color(255, 255, 255), 48.0f, FontWeight::Light);
-    r.Text(L"Облачно", {wc.x + 16.0f, wc.y + 142.0f, wc.w - 32.0f, 20.0f}, Color(255, 255, 255), 14.0f);
-    r.Text(L"Ощущается как 15°  •  Ветер 4 м/с  •  Влажность 72%", {wc.x + 16.0f, wc.y + 164.0f, wc.w - 32.0f, 20.0f},
-           Color(255, 255, 255, 0xD0), 12.0f);
-    static const wchar_t* hours[] = {L"15:00", L"16:00", L"17:00", L"18:00", L"19:00"};
-    static const Icon hourIcons[] = {Icon::PartlyCloudy, Icon::Cloud, Icon::Rain, Icon::Cloud, Icon::Moon};
-    static const wchar_t* temps[] = {L"17°", L"16°", L"14°", L"13°", L"12°"};
-    const float hw = (wc.w - 32.0f) / 5.0f;
-    for (int i = 0; i < 5; ++i)
     {
-        const float hx = wc.x + 16.0f + static_cast<float>(i) * hw;
-        r.Text(hours[i], {hx, wc.y + 200.0f, hw, 18.0f}, Color(255, 255, 255, 0xD0), 12.0f, FontWeight::Regular, TextFlags::Center);
-        r.Glyph(hourIcons[i], {hx + hw * 0.5f - 12.0f, wc.y + 222.0f, 24.0f, 24.0f}, Color(255, 255, 255), 1.2f);
-        r.Text(temps[i], {hx, wc.y + 252.0f, hw, 20.0f}, Color(255, 255, 255), 14.0f, FontWeight::Semibold, TextFlags::Center);
+        const int city = WeatherData::HomeCity();
+        const WeatherData::NowWx wx = WeatherData::Now(city);
+        int offset = 0;
+        (void)Cities::CityTime(Cities::kCities[city], offset);
+        Color skyTop = Color::Hex(0x2C78DC), skyBottom = Color::Hex(0x5FB0FA);
+        if (wx.night)
+        {
+            skyTop = Color::Hex(0x0B1630);
+            skyBottom = Color::Hex(0x2B4470);
+        }
+        else if (wx.cond != WeatherData::Cond::Clear && wx.cond != WeatherData::Cond::PartlyCloudy)
+        {
+            skyTop = Color::Hex(0x557089);
+            skyBottom = Color::Hex(0x93A9BF);
+        }
+        r.FillGradientV(wc, 8.0f, skyTop, skyBottom);
+        m_weatherCard = wc.Translated(0.0f, -sy).Intersect(area);
+        r.Text(L"Погода", {wc.x + 16.0f, wc.y + 12.0f, wc.w - 32.0f, 20.0f}, Color(255, 255, 255, 0xD0), 12.0f);
+        r.Text(Cities::kCities[city].name, {wc.x + 16.0f, wc.y + 32.0f, wc.w - 32.0f, 22.0f}, Color(255, 255, 255), 14.0f, FontWeight::Semibold);
+        WeatherData::DrawIcon(r, {wc.x + 12.0f, wc.y + 64.0f, 72.0f, 72.0f}, wx.cond, wx.night);
+        r.Text(WeatherData::Deg(wx.temp), {wc.x + 92.0f, wc.y + 64.0f, 120.0f, 64.0f}, Color(255, 255, 255), 48.0f, FontWeight::Light);
+        r.Text(WeatherData::CondText(wx.cond, wx.night), {wc.x + 16.0f, wc.y + 142.0f, wc.w - 32.0f, 20.0f}, Color(255, 255, 255), 14.0f);
+        r.Text(L"Ощущается как " + WeatherData::Deg(wx.feels) + L"  •  Ветер " + std::to_wstring(static_cast<int>(std::lround(wx.wind))) +
+                   L" м/с  •  Влажность " + std::to_wstring(wx.humidity) + L"%",
+               {wc.x + 16.0f, wc.y + 164.0f, wc.w - 32.0f, 20.0f}, Color(255, 255, 255, 0xD0), 12.0f);
+        const float hw = (wc.w - 32.0f) / 5.0f;
+        for (int i = 0; i < 5; ++i)
+        {
+            int day = wx.today, hour = wx.local.wHour + 1 + i;
+            if (hour >= 24)
+            {
+                hour -= 24;
+                ++day;
+            }
+            const WeatherData::HourWx h = WeatherData::Hour(city, day, hour, offset);
+            const float hx = wc.x + 16.0f + static_cast<float>(i) * hw;
+            r.Text(Pad2(hour) + L":00", {hx, wc.y + 200.0f, hw, 18.0f}, Color(255, 255, 255, 0xD0), 12.0f, FontWeight::Regular, TextFlags::Center);
+            WeatherData::DrawIcon(r, {hx + hw * 0.5f - 14.0f, wc.y + 220.0f, 28.0f, 28.0f}, h.cond, h.night);
+            r.Text(WeatherData::Deg(h.temp), {hx, wc.y + 252.0f, hw, 20.0f}, Color(255, 255, 255), 14.0f, FontWeight::Semibold, TextFlags::Center);
+        }
     }
 
     // Календарь
