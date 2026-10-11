@@ -107,6 +107,12 @@ public:
     const std::wstring& Text() const { return m_text; }
     void SetText(const std::wstring& s, bool notify = false);
     void SelectAll();
+    void Select(int from, int to)
+    {
+        const int n = static_cast<int>(m_text.size());
+        m_anchor = Clamp(from, 0, n);
+        m_caret = Clamp(to, 0, n);
+    }
     bool HasSelection() const { return m_caret != m_anchor; }
 
     bool Focusable() const override { return true; }

@@ -8,7 +8,7 @@ const std::vector<AppInfo>& Registry()
 {
     static const std::vector<AppInfo> infos = {
         {AppId::Explorer, L"Проводник", AppIcon::Explorer, false, L"Системное приложение"},
-        {AppId::Notepad, L"Блокнот", AppIcon::Notepad, false, L"Приложение"},
+        {AppId::Notepad, L"Блокнот", AppIcon::Notepad, true, L"Приложение"},
         {AppId::Settings, L"Параметры", AppIcon::Settings, true, L"Системное приложение"},
         {AppId::Calculator, L"Калькулятор", AppIcon::Calculator, false, L"Приложение"},
         {AppId::Terminal, L"Терминал", AppIcon::Terminal, false, L"Приложение"},

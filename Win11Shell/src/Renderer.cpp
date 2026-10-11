@@ -1005,8 +1005,9 @@ Gdiplus::Font* Renderer::Font(float size, FontWeight weight, FontFace face)
         font.reset();
     }
     if (!font)
-        font = std::make_unique<Gdiplus::Font>(Gdiplus::FontFamily::GenericSansSerif(), size, Gdiplus::FontStyleRegular,
-                                               Gdiplus::UnitPixel);
+        font = std::make_unique<Gdiplus::Font>(face == FontFace::UI ? Gdiplus::FontFamily::GenericSansSerif()
+                                                                    : Gdiplus::FontFamily::GenericMonospace(),
+                                               size, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
     Gdiplus::Font* raw = font.get();
     m_fonts[key] = std::move(font);
     return raw;
@@ -1081,6 +1082,25 @@ float Renderer::TextHeight(const std::wstring& s, float size, FontWeight weight,
                        Gdiplus::RectF(0.0f, 0.0f, maxWidth, 100000.0f), Format(TextFlags::Wrap | TextFlags::NoEllipsis),
                        &out);
     return out.Height;
+}
+
+float Renderer::MonoCharWidth(float size, FontFace face)
+{
+    if (!m_g)
+        return size * 0.55f;
+    Gdiplus::Matrix saved;
+    m_g->GetTransform(&saved);
+    Gdiplus::Matrix base(m_scale, 0.0f, 0.0f, m_scale, 0.0f, 0.0f);
+    m_g->SetTransform(&base);
+    static const std::wstring probe(80, L'M');
+    Gdiplus::Font* f = Font(size, FontWeight::Regular, face);
+    Gdiplus::StringFormat* fmt = Format(TextFlags::NoEllipsis);
+    Gdiplus::RectF a, b;
+    m_g->MeasureString(probe.c_str(), 40, f, Gdiplus::PointF(0.0f, 0.0f), fmt, &a);
+    m_g->MeasureString(probe.c_str(), 80, f, Gdiplus::PointF(0.0f, 0.0f), fmt, &b);
+    m_g->SetTransform(&saved);
+    const float w = (b.Width - a.Width) / 40.0f;
+    return w > 0.1f ? w : size * 0.55f;
 }
 
 float Renderer::LineHeight(float size, FontWeight weight, FontFace face)

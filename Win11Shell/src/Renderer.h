@@ -133,6 +133,8 @@ public:
     float TextHeight(const std::wstring& s, float size, FontWeight weight, float maxWidth,
                      FontFace face = FontFace::UI);
     float LineHeight(float size, FontWeight weight = FontWeight::Regular, FontFace face = FontFace::UI);
+    // Шаг символа моноширинного шрифта при базовом масштабе (не зависит от анимационных преобразований).
+    float MonoCharWidth(float size, FontFace face);
     // Индекс символа, ближайшего к x (для позиционирования каретки).
     int HitTestText(const std::wstring& s, float x, float size, FontWeight weight = FontWeight::Regular,
                     FontFace face = FontFace::UI);
