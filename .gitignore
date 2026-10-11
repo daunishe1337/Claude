@@ -1,0 +1,11 @@
+# Visual Studio
+.vs/
+x64/
+Win11Shell/x64/
+*.user
+*.aps
+*.ipch
+*.VC.db
+*.VC.opendb
+*.sdf
+*.opensdf
