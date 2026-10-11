@@ -42,6 +42,10 @@ using std::min;
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+// windowsx.h определяет макросы IsMinimized(hwnd)/IsMaximized(hwnd), совпадающие с методами окна.
+#undef IsMinimized
+#undef IsMaximized
+#undef IsRestored
 
 // ---------------------------------------------------------------------------
 // Математика

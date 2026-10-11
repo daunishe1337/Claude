@@ -6,6 +6,7 @@
 #include "../Shell.h"
 #include "../Taskbar.h"
 #include "AppFactories.h"
+#include "SysInfo.h"
 
 namespace
 {
@@ -346,42 +347,8 @@ const std::vector<SearchEntry>& SearchIndex()
 }
 
 // ---------------------------------------------------------------------------
-// Сведения о системе (реальные данные через WinAPI)
+// Сведения о системе
 // ---------------------------------------------------------------------------
-std::wstring ProcessorName()
-{
-    wchar_t buf[256] = {};
-    DWORD size = static_cast<DWORD>(sizeof(buf));
-    if (RegGetValueW(HKEY_LOCAL_MACHINE, L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", L"ProcessorNameString",
-                     RRF_RT_REG_SZ, nullptr, buf, &size) == ERROR_SUCCESS)
-    {
-        const std::wstring s = Trim(buf);
-        if (!s.empty())
-            return s;
-    }
-    SYSTEM_INFO si{};
-    GetNativeSystemInfo(&si);
-    return L"Процессор x64, логических процессоров: " + std::to_wstring(si.dwNumberOfProcessors);
-}
-
-std::wstring GbText(unsigned long long bytes)
-{
-    const double gb = static_cast<double>(bytes) / (1024.0 * 1024.0 * 1024.0);
-    const long long tenths = static_cast<long long>(gb * 10.0 + 0.5);
-    return std::to_wstring(tenths / 10) + L"," + std::to_wstring(tenths % 10) + L" ГБ";
-}
-
-std::wstring MemoryText()
-{
-    MEMORYSTATUSEX ms{};
-    ms.dwLength = sizeof(ms);
-    if (!GlobalMemoryStatusEx(&ms))
-        return L"16,0 ГБ";
-    // Установленная память — округление до целых гигабайт вверх.
-    const unsigned long long gb = (ms.ullTotalPhys + (1ULL << 30) - 1) >> 30;
-    return std::to_wstring(gb) + L",0 ГБ (доступно: " + GbText(ms.ullTotalPhys) + L")";
-}
-
 std::wstring TimeZoneText()
 {
     TIME_ZONE_INFORMATION tz{};
@@ -1250,8 +1217,8 @@ private:
         }
         const std::vector<std::pair<std::wstring, std::wstring>> device = {
             {L"Имя устройства", st.computerName},
-            {L"Процессор", ProcessorName()},
-            {L"Оперативная память", MemoryText()},
+            {L"Процессор", SysInfo::ProcessorName()},
+            {L"Оперативная память", SysInfo::InstalledMemoryText()},
             {L"Код устройства", L"8F3C2A1B-4D5E-4F60-9A7B-1C2D3E4F5A6B"},
             {L"Код продукта", L"00330-80000-00000-AA431"},
             {L"Тип системы", L"64-разрядная операционная система, процессор x64"},

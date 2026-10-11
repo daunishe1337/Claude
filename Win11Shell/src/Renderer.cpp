@@ -656,10 +656,10 @@ void Renderer::Shadow(const Rect& r, float radius, float blur, float offsetY, fl
     }
 }
 
-void Renderer::BlitSmall(const uint32_t* small, int sw, int sh, float dstX, float dstY, float cell, int clipX0,
+void Renderer::BlitSmall(const uint32_t* pixels, int sw, int sh, float dstX, float dstY, float cell, int clipX0,
                          int clipY0, int clipX1, int clipY1)
 {
-    Gdiplus::Bitmap bmp(sw, sh, sw * 4, PixelFormat32bppRGB, reinterpret_cast<BYTE*>(const_cast<uint32_t*>(small)));
+    Gdiplus::Bitmap bmp(sw, sh, sw * 4, PixelFormat32bppRGB, reinterpret_cast<BYTE*>(const_cast<uint32_t*>(pixels)));
     const Gdiplus::GraphicsState st = m_g->Save();
     m_g->ResetTransform();
     m_g->SetClip(Gdiplus::Rect(clipX0, clipY0, clipX1 - clipX0, clipY1 - clipY0), Gdiplus::CombineModeIntersect);

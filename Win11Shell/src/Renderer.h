@@ -175,7 +175,7 @@ private:
     Gdiplus::StringFormat* Format(unsigned flags);
     void DeviceRect(const Rect& r, int& x0, int& y0, int& x1, int& y1) const;
     void SaveCorners(int x0, int y0, int x1, int y1, float radiusPx);
-    void BlitSmall(const uint32_t* small, int sw, int sh, float dstX, float dstY, float cell, int clipX0,
+    void BlitSmall(const uint32_t* pixels, int sw, int sh, float dstX, float dstY, float cell, int clipX0,
                    int clipY0, int clipX1, int clipY1);
     void GlyphImpl(Icon icon, Color c, float stroke);
     void AppIconImpl(AppIcon icon);
