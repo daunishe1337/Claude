@@ -651,6 +651,7 @@ void Shell::Timer(UINT_PTR id)
     {
         for (auto& w : m_wm->Windows())
             w->OnTimer1s();
+        ClockBackgroundTick(); // таймеры и будильники работают и при закрытых «Часах»
         const SYSTEMTIME now = LocalNow();
         if (now.wMinute != m_lastMinute)
             m_lastMinute = now.wMinute;

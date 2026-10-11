@@ -20,6 +20,13 @@ std::unique_ptr<Window> CreateMediaPlayer(const std::wstring& arg);
 std::unique_ptr<Window> CreateCalendar(const std::wstring& arg);
 std::unique_ptr<Window> CreatePlaceholder(AppId id, const std::wstring& arg);
 
+// Часы: фоновые таймеры и будильники (вызывается раз в секунду оболочкой) и сеансы фокусировки,
+// которые запускаются и из центра уведомлений.
+void ClockBackgroundTick();
+void ClockStartFocus(int minutes);
+void ClockStopFocus();
+bool ClockFocusActive();
+
 std::unique_ptr<Window> CreateMessageBox(const std::wstring& title, const std::wstring& text, AppIcon icon);
 std::unique_ptr<Window> CreateProperties(FsNode* node);
 std::unique_ptr<Window> CreateShutdownDialog();

@@ -1,6 +1,7 @@
 ﻿#include "Flyouts.h"
 
 #include "Taskbar.h"
+#include "apps/AppFactories.h"
 #include "apps/Photos.h"
 
 // ===========================================================================
@@ -609,11 +610,13 @@ void NotificationCenter::Build()
     start->iconSize = 12.0f;
     start->SetBounds({c.Right() - 12.0f - 140.0f, fy + 6.0f, 140.0f, 32.0f});
     start->onClick = [this]() {
-        ShellSettings& s = GetShell().Settings();
-        s.focus = !s.focus;
-        if (s.focus)
-            GetShell().Notify(AppIcon::Clock, L"Часы", L"Сеанс фокусировки начат",
-                              L"Продолжительность: " + std::to_wstring(m_focusMinutes) + L" мин. Уведомления будут скрыты.");
+        // Сеанс фокусировки ведут «Часы»: по его окончании режим «Не беспокоить» выключится сам.
+        if (ClockFocusActive())
+            ClockStopFocus();
+        else if (GetShell().Settings().focus)
+            GetShell().Settings().focus = false;
+        else
+            ClockStartFocus(m_focusMinutes);
         Build();
     };
 }

@@ -35,6 +35,7 @@ struct AppInfo
     AppIcon icon = AppIcon::None;
     bool singleInstance = false;
     const wchar_t* kind = L"Приложение";
+    const wchar_t* keywords = L""; // дополнительные слова для поиска (в том числе английские)
 };
 
 const AppInfo& GetAppInfo(AppId id);

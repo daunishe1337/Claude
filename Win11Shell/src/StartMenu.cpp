@@ -203,7 +203,7 @@ void StartMenu::UpdateSearch(const std::wstring& q)
         const std::wstring name = GetAppInfo(a).name;
         if (StartsWithNoCase(name, query))
             starts.push_back(a);
-        else if (ContainsNoCase(name, query))
+        else if (ContainsNoCase(name, query) || ContainsNoCase(GetAppInfo(a).keywords, query))
             contains.push_back(a);
     }
     for (const auto* list : {&starts, &contains})

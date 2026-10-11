@@ -2,7 +2,6 @@
 #include "../Shell.h"
 #include "AppFactories.h"
 
-std::unique_ptr<Window> CreateClock(const std::wstring& arg) { return CreatePlaceholder(AppId::Clock, arg); }
 std::unique_ptr<Window> CreateWeather(const std::wstring& arg) { return CreatePlaceholder(AppId::Weather, arg); }
 std::unique_ptr<Window> CreateBrowser(const std::wstring& arg) { return CreatePlaceholder(AppId::Browser, arg); }
 std::unique_ptr<Window> CreateMediaPlayer(const std::wstring& arg) { return CreatePlaceholder(AppId::MediaPlayer, arg); }
