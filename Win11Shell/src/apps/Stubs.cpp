@@ -2,7 +2,6 @@
 #include "../Shell.h"
 #include "AppFactories.h"
 
-std::unique_ptr<Window> CreateTerminal(const std::wstring& arg) { return CreatePlaceholder(AppId::Terminal, arg); }
 std::unique_ptr<Window> CreateTaskManager(const std::wstring& arg) { return CreatePlaceholder(AppId::TaskManager, arg); }
 std::unique_ptr<Window> CreatePaint(const std::wstring& arg) { return CreatePlaceholder(AppId::Paint, arg); }
 std::unique_ptr<Window> CreateClock(const std::wstring& arg) { return CreatePlaceholder(AppId::Clock, arg); }

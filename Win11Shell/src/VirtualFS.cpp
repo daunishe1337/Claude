@@ -302,8 +302,21 @@ FsNode* VirtualFS::Resolve(const std::wstring& rawPath, FsNode* cwd) const
             continue;
         }
         FsNode* next = Find(cur, part);
-        if (!next && ToLower(part) == L"users")
-            next = Find(cur, L"Пользователи");
+        if (!next)
+        {
+            // Английские имена системных папок (как в реальной файловой системе Windows).
+            static const std::pair<const wchar_t*, const wchar_t*> aliases[] = {
+                {L"users", L"Пользователи"}, {L"desktop", L"Рабочий стол"}, {L"documents", L"Документы"},
+                {L"downloads", L"Загрузки"},  {L"pictures", L"Изображения"}, {L"music", L"Музыка"},
+                {L"videos", L"Видео"},        {L"public", L"Общие"},         {L"screenshots", L"Снимки экрана"},
+            };
+            const std::wstring lp = ToLower(part);
+            for (const auto& a : aliases)
+            {
+                if (lp == a.first)
+                    next = Find(cur, a.second);
+            }
+        }
         cur = next;
     }
     return cur;

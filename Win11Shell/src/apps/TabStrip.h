@@ -82,6 +82,13 @@ public:
     void Draw(Renderer& r, float windowW, const std::vector<TabInfo>& tabs, int current, Color selectedFill, Color text,
               Color hoverFill, Color divider) const
     {
+        Draw(r, windowW, tabs, current, selectedFill, text, hoverFill, divider, text);
+    }
+
+    // selectedText — цвет подписи выбранной вкладки (у Терминала она тёмная, как фон консоли).
+    void Draw(Renderer& r, float windowW, const std::vector<TabInfo>& tabs, int current, Color selectedFill, Color text,
+              Color hoverFill, Color divider, Color selectedText) const
+    {
         const int count = static_cast<int>(tabs.size());
         for (int i = 0; i < count; ++i)
         {
@@ -100,6 +107,7 @@ public:
             else if (i + 1 != current && i + 1 < count && i + 1 != hover)
                 r.FillRect({tr.Right() - 0.5f, tr.y + 8.0f, 1.0f, 16.0f}, divider);
             const TabInfo& t = tabs[static_cast<size_t>(i)];
+            const Color fg = sel ? selectedText : text;
             float tx = tr.x + 12.0f;
             if (t.appIcon != AppIcon::None)
             {
@@ -108,18 +116,18 @@ public:
             }
             else if (t.glyph != Icon::None)
             {
-                r.Glyph(t.glyph, {tx, tr.CenterY() - 8.0f, 16.0f, 16.0f}, text);
+                r.Glyph(t.glyph, {tx, tr.CenterY() - 8.0f, 16.0f, 16.0f}, fg);
                 tx += 24.0f;
             }
-            r.Text(t.title, {tx, tr.y, tr.Right() - tx - 34.0f, tr.h}, text, 12.0f, FontWeight::Regular, TextFlags::VCenter);
+            r.Text(t.title, {tx, tr.y, tr.Right() - tx - 34.0f, tr.h}, fg, 12.0f, FontWeight::Regular, TextFlags::VCenter);
             const Rect xr = CloseRect(tr);
             if (t.modified && !(hot && hoverClose))
-                r.FillCircle(xr.CenterX(), xr.CenterY(), 3.5f, text);
+                r.FillCircle(xr.CenterX(), xr.CenterY(), 3.5f, fg);
             else if (sel || hot)
             {
                 if (hot && hoverClose)
-                    r.FillRoundRect(xr, 4.0f, hoverFill);
-                r.Glyph(Icon::Close, {xr.CenterX() - 5.0f, xr.CenterY() - 5.0f, 10.0f, 10.0f}, text);
+                    r.FillRoundRect(xr, 4.0f, sel ? Color(255, 255, 255, 0x18) : hoverFill);
+                r.Glyph(Icon::Close, {xr.CenterX() - 5.0f, xr.CenterY() - 5.0f, 10.0f, 10.0f}, fg);
             }
         }
         const Rect nr = NewRect(windowW, count);
