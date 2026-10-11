@@ -159,6 +159,7 @@ public:
     void Maximize(Window* w);
     void SnapTo(Window* w, SnapZone z);
     void SnapToRect(Window* w, const Rect& r);
+    void MoveResize(Window* w, const Rect& r); // плавно изменить положение и размер (без привязки)
     void Close(Window* w);
     void ForceClose(Window* w);
     void ShowDesktop();

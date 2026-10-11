@@ -64,9 +64,9 @@ std::wstring RelativeTime(const SYSTEMTIME& t)
     if (minutes < 1)
         return L"Только что";
     if (minutes < 60)
-        return std::to_wstring(minutes) + L" мин назад";
+        return std::to_wstring(minutes) + L"\u00A0мин назад";
     if (t.wYear == now.wYear && t.wMonth == now.wMonth && t.wDay == now.wDay)
-        return std::to_wstring(minutes / 60) + L" ч назад";
+        return std::to_wstring(minutes / 60) + L"\u00A0ч назад";
     const SYSTEMTIME y = AddDays(now, -1);
     if (t.wYear == y.wYear && t.wMonth == y.wMonth && t.wDay == y.wDay)
         return L"Вчера в " + FormatTime(t);

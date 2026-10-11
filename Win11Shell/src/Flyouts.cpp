@@ -452,7 +452,7 @@ void QuickSettings::Draw(Renderer& r)
     if (m_page == 0)
     {
         r.BatteryIcon({bar.x + 22.0f, bar.CenterY() - 8.0f, 16.0f, 16.0f}, p.text, st.battery, st.charging);
-        r.Text(std::to_wstring(static_cast<int>(st.battery * 100.0f + 0.5f)) + L" %", {bar.x + 46.0f, bar.y, 80.0f, bar.h},
+        r.Text(std::to_wstring(static_cast<int>(st.battery * 100.0f + 0.5f)) + L"\u00A0%", {bar.x + 46.0f, bar.y, 80.0f, bar.h},
                p.text, 12.0f, FontWeight::Regular, TextFlags::VCenter);
     }
     m_ui.Draw(r);
@@ -666,7 +666,7 @@ void NotificationCenter::Draw(Renderer& r)
         const float slide = (1.0f - mt) * 24.0f * static_cast<float>(m_monthDir);
         r.PushClip({c.x, c.y + 49.0f, c.w, 48.0f + 32.0f + 242.0f});
         r.PushOpacity(0.3f + 0.7f * mt);
-        r.Text(std::wstring(MonthName(m_viewMonth)) + L" " + std::to_wstring(m_viewYear) + L" г.",
+        r.Text(std::wstring(MonthName(m_viewMonth)) + L" " + std::to_wstring(m_viewYear) + L"\u00A0г.",
                {c.x + 16.0f, c.y + 49.0f + slide, 220.0f, 48.0f}, p.text, 14.0f, FontWeight::Semibold, TextFlags::VCenter);
         const float gx = c.x + 12.0f, gy = c.y + 49.0f + 48.0f;
         for (int d = 0; d < 7; ++d)

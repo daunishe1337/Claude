@@ -409,6 +409,15 @@ void WindowManager::SnapToRect(Window* w, const Rect& r)
     Activate(w);
 }
 
+void WindowManager::MoveResize(Window* w, const Rect& r)
+{
+    if (!w || w->IsMaximized() || w->IsMinimized())
+        return;
+    w->m_snapped = false;
+    BeginMorph(w, r);
+    w->m_restoreFrame = r;
+}
+
 void WindowManager::BeginMorph(Window* w, const Rect& target)
 {
     w->m_morphFrom = w->VisualFrame();

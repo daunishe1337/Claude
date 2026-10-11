@@ -602,7 +602,7 @@ void Taskbar::MouseMove(const MouseEvent& e)
         m_previewApp = AppId::None;
     const std::wstring tip = TooltipFor(it);
     if (!tip.empty() && it.kind != Kind::Search)
-        sh.Tooltip(&m_items, tip + std::wstring(static_cast<size_t>(idx) % 2, L'​'), it.rect, true);
+        sh.Tooltip(&m_items, tip + std::wstring(static_cast<size_t>(idx) % 2, L'\u200B'), it.rect, true);
 }
 
 void Taskbar::MouseDown(const MouseEvent& e)

@@ -235,7 +235,7 @@ std::wstring GroupDigits(long long v)
     {
         out.insert(out.begin(), digits[i - 1]);
         if (++count % 3 == 0 && i > 1)
-            out.insert(out.begin(), L' ');
+            out.insert(out.begin(), L'\u00A0');
     }
     if (neg)
         out.insert(out.begin(), L'-');
@@ -245,7 +245,7 @@ std::wstring GroupDigits(long long v)
 std::wstring FormatKB(unsigned long long bytes)
 {
     const unsigned long long kb = (bytes + 1023ULL) / 1024ULL;
-    return GroupDigits(static_cast<long long>(kb == 0 && bytes > 0 ? 1 : kb)) + L" КБ";
+    return GroupDigits(static_cast<long long>(kb == 0 && bytes > 0 ? 1 : kb)) + L"\u00A0КБ";
 }
 
 std::wstring FormatSize(unsigned long long bytes)
@@ -268,7 +268,7 @@ std::wstring FormatSize(unsigned long long bytes)
         if (tenths % 10 != 0)
             num += L"," + std::to_wstring(tenths % 10);
     }
-    return num + L" " + units[u];
+    return num + L"\u00A0" + units[u];
 }
 
 std::wstring FormatTime(const SYSTEMTIME& st) { return Pad2(st.wHour) + L":" + Pad2(st.wMinute); }
