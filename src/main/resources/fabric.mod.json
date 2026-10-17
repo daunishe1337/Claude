@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "optimod",
+	"version": "${version}",
+	"name": "Optimod",
+	"description": "Клиентские оптимизации: отсечение скрытых сущностей в отдельном потоке, дальность отрисовки, лимит частиц, снижение FPS в фоне, экономия памяти, анимации только видимых текстур и отладочный оверлей.",
+	"authors": [
+		"Optimod contributors"
+	],
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.optimod.OptimodClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "optimod.mixins.json",
+			"environment": "client"
+		},
+		{
+			"config": "optimod.optional.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": ">=0.161.0"
+	},
+	"suggests": {
+		"modmenu": "*"
+	}
+}

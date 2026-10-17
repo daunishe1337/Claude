@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "dev.optimod.mixin",
+	"plugin": "dev.optimod.mixin.OptimodMixinPlugin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
