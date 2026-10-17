@@ -7,6 +7,7 @@ import dev.optimod.compat.Modules;
 import dev.optimod.config.ConfigManager;
 import dev.optimod.culling.CullingManager;
 import dev.optimod.memory.MemoryManager;
+import dev.optimod.overlay.DebugOverlay;
 import dev.optimod.particle.ParticleTracker;
 import dev.optimod.render.FrameContext;
 import dev.optimod.stats.OptimodStats;
@@ -14,6 +15,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.Identifier;
@@ -44,6 +46,9 @@ public final class OptimodClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(OptimodClient::onEndTick);
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> CullingManager.shutdown());
 		ClientChunkEvents.CHUNK_UNLOAD.register(AnimationTracker::onChunkUnload);
+
+		// Модуль 7: оверлей рисуется поверх остального HUD
+		HudElementRegistry.addLast(id("debug_overlay"), new DebugOverlay());
 
 		Optimod.LOGGER.info("Optimod инициализирован за {} мс. Конфиг: {}",
 				(System.nanoTime() - start) / 1_000_000, ConfigManager.path());

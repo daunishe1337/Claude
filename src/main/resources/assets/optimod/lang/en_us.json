@@ -1,0 +1,22 @@
+{
+	"optimod.module.entity_culling": "Occlusion culling",
+	"optimod.module.render_distance": "Render distance",
+	"optimod.module.particles": "Particles",
+	"optimod.module.background": "Background",
+	"optimod.module.memory": "Memory",
+	"optimod.module.animations": "Animations",
+	"optimod.module.debug_overlay": "Overlay",
+
+	"optimod.overlay.culling": "Hidden behind walls: %s entities, %s block entities",
+	"optimod.overlay.culling_thread": "Culling thread: pass %s ms, %s tracked, %s hidden",
+	"optimod.overlay.distance": "Beyond distance: %s entities, %s block entities, %s particles/s",
+	"optimod.overlay.particles": "Particles: %s alive of %s, skipped last second: limit %s, out of view %s",
+	"optimod.overlay.background": "Window: %s (background FPS limit %s, minimized %s)",
+	"optimod.overlay.window.focused": "focused",
+	"optimod.overlay.window.unfocused": "unfocused",
+	"optimod.overlay.window.minimized": "minimized",
+	"optimod.overlay.memory": "Memory: %s / %s MB, model cubes reused %s",
+	"optimod.overlay.animations": "Animations: skipped %s of %s uploads per tick (%s sprites in world)",
+	"optimod.overlay.disabled": "%s: off",
+	"optimod.overlay.blocked": "%s: disabled because of %s"
+}

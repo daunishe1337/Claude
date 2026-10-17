@@ -1,0 +1,22 @@
+{
+	"optimod.module.entity_culling": "Отсечение скрытых",
+	"optimod.module.render_distance": "Дальность отрисовки",
+	"optimod.module.particles": "Частицы",
+	"optimod.module.background": "Фон",
+	"optimod.module.memory": "Память",
+	"optimod.module.animations": "Анимации",
+	"optimod.module.debug_overlay": "Оверлей",
+
+	"optimod.overlay.culling": "Скрыто стенами: сущностей %s, блок-сущностей %s",
+	"optimod.overlay.culling_thread": "Поток отсечения: проход %s мс, объектов %s, скрыто %s",
+	"optimod.overlay.distance": "За дальностью: сущностей %s, блок-сущностей %s, частиц %s/с",
+	"optimod.overlay.particles": "Частицы: живых %s из %s, пропущено за 1 с: лимит %s, вне обзора %s",
+	"optimod.overlay.background": "Окно: %s (лимит FPS в фоне %s, свёрнуто %s)",
+	"optimod.overlay.window.focused": "в фокусе",
+	"optimod.overlay.window.unfocused": "без фокуса",
+	"optimod.overlay.window.minimized": "свёрнуто",
+	"optimod.overlay.memory": "Память: %s / %s МБ, кубов моделей переиспользовано %s",
+	"optimod.overlay.animations": "Анимации: пропущено загрузок %s из %s за тик (спрайтов в мире %s)",
+	"optimod.overlay.disabled": "%s: выключено",
+	"optimod.overlay.blocked": "%s: отключено из-за %s"
+}
