@@ -5,6 +5,7 @@ import dev.optimod.compat.CompatManager;
 import dev.optimod.compat.Modules;
 import dev.optimod.config.ConfigManager;
 import dev.optimod.culling.CullingManager;
+import dev.optimod.memory.MemoryManager;
 import dev.optimod.particle.ParticleTracker;
 import dev.optimod.render.FrameContext;
 import dev.optimod.stats.OptimodStats;
@@ -62,6 +63,7 @@ public final class OptimodClient implements ClientModInitializer {
 		}
 		ParticleTracker.tick();
 		BackgroundManager.tick(client);
+		MemoryManager.tick(client);
 
 		ClientLevel level = client.level;
 		if (level != lastLevel) {
@@ -76,5 +78,8 @@ public final class OptimodClient implements ClientModInitializer {
 		FrameContext.reset();
 		CullingManager.onLevelChanged(newLevel);
 		ParticleTracker.clear();
+		if (oldLevel != null && newLevel == null) {
+			MemoryManager.onWorldLeft();
+		}
 	}
 }

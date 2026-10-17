@@ -5,6 +5,7 @@
 	"plugin": "dev.optimod.mixin.OptimodMixinPlugin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"memory.CubeDefinitionMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0
