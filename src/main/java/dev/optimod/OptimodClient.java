@@ -1,5 +1,6 @@
 package dev.optimod;
 
+import dev.optimod.animation.AnimationTracker;
 import dev.optimod.background.BackgroundManager;
 import dev.optimod.compat.CompatManager;
 import dev.optimod.compat.Modules;
@@ -10,6 +11,7 @@ import dev.optimod.particle.ParticleTracker;
 import dev.optimod.render.FrameContext;
 import dev.optimod.stats.OptimodStats;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
@@ -41,6 +43,7 @@ public final class OptimodClient implements ClientModInitializer {
 		ClientTickEvents.START_CLIENT_TICK.register(OptimodClient::onStartTick);
 		ClientTickEvents.END_CLIENT_TICK.register(OptimodClient::onEndTick);
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> CullingManager.shutdown());
+		ClientChunkEvents.CHUNK_UNLOAD.register(AnimationTracker::onChunkUnload);
 
 		Optimod.LOGGER.info("Optimod инициализирован за {} мс. Конфиг: {}",
 				(System.nanoTime() - start) / 1_000_000, ConfigManager.path());
@@ -53,6 +56,8 @@ public final class OptimodClient implements ClientModInitializer {
 
 	/** Начало клиентского тика (до тика текстур, сущностей и т.д.). */
 	private static void onStartTick(Minecraft client) {
+		// До тика текстур: решаем, какие анимации видны
+		AnimationTracker.beforeAnimationTick();
 	}
 
 	/** Конец клиентского тика. */
@@ -78,6 +83,7 @@ public final class OptimodClient implements ClientModInitializer {
 		FrameContext.reset();
 		CullingManager.onLevelChanged(newLevel);
 		ParticleTracker.clear();
+		AnimationTracker.clearWorld();
 		if (oldLevel != null && newLevel == null) {
 			MemoryManager.onWorldLeft();
 		}

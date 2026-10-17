@@ -306,7 +306,8 @@ final class OcclusionCullingThread extends Thread {
 
 	/** Непрозрачен ли блок. Результат кэшируется на время прохода. */
 	private boolean isOpaque(int x, int y, int z) {
-		if (y < minBuildY || y >= maxBuildY) {
+		// getMaxY() — верхний блок включительно; за пределами мира — воздух
+		if (y < minBuildY || y > maxBuildY) {
 			return false;
 		}
 
