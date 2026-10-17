@@ -6,6 +6,7 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"culling.CullableMixin",
+		"particle.ParticleEngineMixin",
 		"render.BlockEntityRenderDispatcherMixin",
 		"render.EntityRendererMixin",
 		"render.LevelExtractorMixin"

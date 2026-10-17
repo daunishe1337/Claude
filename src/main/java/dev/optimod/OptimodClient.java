@@ -5,6 +5,7 @@ import dev.optimod.compat.Modules;
 import dev.optimod.config.ConfigManager;
 import dev.optimod.culling.CullingManager;
 import dev.optimod.render.FrameContext;
+import dev.optimod.stats.OptimodStats;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -21,6 +22,8 @@ import net.minecraft.resources.Identifier;
 public final class OptimodClient implements ClientModInitializer {
 	/** Мир на прошлом тике — чтобы заметить вход/выход/смену измерения. */
 	private static ClientLevel lastLevel;
+	/** Счётчик тиков для статистики «за секунду». */
+	private static int tickCounter;
 
 	@Override
 	public void onInitializeClient() {
@@ -51,6 +54,11 @@ public final class OptimodClient implements ClientModInitializer {
 
 	/** Конец клиентского тика. */
 	private static void onEndTick(Minecraft client) {
+		if (++tickCounter >= 20) {
+			tickCounter = 0;
+			OptimodStats.endSecond();
+		}
+
 		ClientLevel level = client.level;
 		if (level != lastLevel) {
 			onLevelChanged(lastLevel, level);

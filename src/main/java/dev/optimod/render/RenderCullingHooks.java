@@ -7,6 +7,7 @@ import dev.optimod.culling.CullingManager;
 import dev.optimod.culling.OptimodCullable;
 import dev.optimod.stats.OptimodStats;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -23,12 +24,12 @@ public final class RenderCullingHooks {
 
 	/** Нужна ли вообще работа по сущностям (быстрый выход, если модули выключены). */
 	public static boolean anyEntityCulling() {
-		return Modules.entityCulling;
+		return Modules.entityCulling || Modules.renderDistance;
 	}
 
 	/** Нужна ли вообще работа по блок-сущностям. */
 	public static boolean anyBlockEntityCulling() {
-		return Modules.entityCulling;
+		return Modules.entityCulling || Modules.renderDistance;
 	}
 
 	/**
@@ -42,6 +43,18 @@ public final class RenderCullingHooks {
 		}
 
 		OptimodConfig config = ConfigManager.get();
+
+		// Модуль 2: дальность отрисовки (дешёвая проверка — идёт первой)
+		if (Modules.renderDistance && (config.renderDistance.applyToPlayers || !(entity instanceof Player))) {
+			double dx = entity.getX() - camX;
+			double dy = entity.getY() - camY;
+			double dz = entity.getZ() - camZ;
+			double max = config.renderDistance.entityDistance;
+			if (dx * dx + dy * dy + dz * dz > max * max) {
+				OptimodStats.curEntitiesByDistance++;
+				return true;
+			}
+		}
 
 		// Модуль 1: скрыта ли сущность стенами (результат фонового потока)
 		if (Modules.entityCulling && config.entityCulling.cullEntities && isOcclusionCandidate(entity)) {
@@ -61,6 +74,19 @@ public final class RenderCullingHooks {
 	 */
 	public static boolean shouldSkipBlockEntity(BlockEntity blockEntity) {
 		OptimodConfig config = ConfigManager.get();
+
+		// Модуль 2: дальность отрисовки (от центра блока до камеры текущего кадра)
+		if (Modules.renderDistance && FrameContext.valid) {
+			BlockPos pos = blockEntity.getBlockPos();
+			double dx = pos.getX() + 0.5 - FrameContext.cameraX;
+			double dy = pos.getY() + 0.5 - FrameContext.cameraY;
+			double dz = pos.getZ() + 0.5 - FrameContext.cameraZ;
+			double max = config.renderDistance.blockEntityDistance;
+			if (dx * dx + dy * dy + dz * dz > max * max) {
+				OptimodStats.curBlockEntitiesByDistance++;
+				return true;
+			}
+		}
 
 		// Модуль 1: скрыта ли стенами
 		if (Modules.entityCulling && config.entityCulling.cullBlockEntities) {
