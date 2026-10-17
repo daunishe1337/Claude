@@ -5,6 +5,10 @@
 	"plugin": "dev.optimod.mixin.OptimodMixinPlugin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"background.FramerateLimitTrackerMixin",
+		"background.OptionsMixin",
+		"background.SoundEngineMixin",
+		"background.SoundManagerAccessor",
 		"culling.CullableMixin",
 		"particle.ClientLevelParticleMixin",
 		"particle.ParticleEngineMixin",

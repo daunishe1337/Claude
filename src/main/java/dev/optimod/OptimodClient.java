@@ -1,5 +1,6 @@
 package dev.optimod;
 
+import dev.optimod.background.BackgroundManager;
 import dev.optimod.compat.CompatManager;
 import dev.optimod.compat.Modules;
 import dev.optimod.config.ConfigManager;
@@ -60,6 +61,7 @@ public final class OptimodClient implements ClientModInitializer {
 			OptimodStats.endSecond();
 		}
 		ParticleTracker.tick();
+		BackgroundManager.tick(client);
 
 		ClientLevel level = client.level;
 		if (level != lastLevel) {
