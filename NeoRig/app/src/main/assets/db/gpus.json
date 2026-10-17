@@ -1,0 +1,125 @@
+{
+  "category": "GPU",
+  "items": [
+    {
+      "id": "gpu-integrated", "name": "Integrated graphics", "brand": "—", "price": 0, "score": 4, "workScore": 4,
+      "specs": { "vramGb": 0 },
+      "compat": { "tdpW": 0, "lengthMm": 0 },
+      "visual": { "color": "#000000", "accent": "#000000", "style": "none" }
+    },
+    {
+      "id": "gpu-rx6400", "name": "Radeon RX 6400 4 ГБ", "brand": "AMD", "price": 11490, "score": 9, "workScore": 8,
+      "specs": { "vramGb": 4 },
+      "compat": { "tdpW": 53, "lengthMm": 165 },
+      "visual": { "color": "#22252D", "accent": "#EF4444", "style": "single-fan" }
+    },
+    {
+      "id": "gpu-arc-a380", "name": "Arc A380 6 ГБ", "brand": "Intel", "price": 12990, "score": 11, "workScore": 14,
+      "specs": { "vramGb": 6 },
+      "compat": { "tdpW": 75, "lengthMm": 190 },
+      "visual": { "color": "#2A2D35", "accent": "#60A5FA", "style": "single-fan" }
+    },
+    {
+      "id": "gpu-gtx1650", "name": "GeForce GTX 1650 4 ГБ", "brand": "NVIDIA", "price": 13990, "score": 12, "workScore": 12,
+      "specs": { "vramGb": 4 },
+      "compat": { "tdpW": 75, "lengthMm": 180 },
+      "visual": { "color": "#1F2228", "accent": "#84CC16", "style": "single-fan" }
+    },
+    {
+      "id": "gpu-rx6600", "name": "Radeon RX 6600 8 ГБ", "brand": "AMD", "price": 21490, "score": 26, "workScore": 22,
+      "specs": { "vramGb": 8 },
+      "compat": { "tdpW": 132, "lengthMm": 230 },
+      "visual": { "color": "#23262E", "accent": "#EF4444", "style": "dual-fan", "model": "gpu_dual_fan.glb" }
+    },
+    {
+      "id": "gpu-rtx3050", "name": "GeForce RTX 3050 8 ГБ", "brand": "NVIDIA", "price": 21990, "score": 23, "workScore": 26,
+      "specs": { "vramGb": 8 },
+      "compat": { "tdpW": 130, "lengthMm": 200 },
+      "visual": { "color": "#1E2127", "accent": "#84CC16", "style": "dual-fan", "model": "gpu_dual_fan.glb" }
+    },
+    {
+      "id": "gpu-arc-b570", "name": "Arc B570 10 ГБ", "brand": "Intel", "price": 25990, "score": 32, "workScore": 34,
+      "specs": { "vramGb": 10 },
+      "compat": { "tdpW": 150, "lengthMm": 250 },
+      "visual": { "color": "#E5E7EB", "accent": "#60A5FA", "style": "dual-fan", "model": "gpu_dual_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rx7600", "name": "Radeon RX 7600 8 ГБ", "brand": "AMD", "price": 26990, "score": 33, "workScore": 30,
+      "specs": { "vramGb": 8 },
+      "compat": { "tdpW": 165, "lengthMm": 240 },
+      "visual": { "color": "#22252D", "accent": "#EF4444", "style": "dual-fan", "model": "gpu_dual_fan.glb" }
+    },
+    {
+      "id": "gpu-arc-b580", "name": "Arc B580 12 ГБ", "brand": "Intel", "price": 29990, "score": 38, "workScore": 40,
+      "specs": { "vramGb": 12 },
+      "compat": { "tdpW": 190, "lengthMm": 272 },
+      "visual": { "color": "#2B2E36", "accent": "#60A5FA", "style": "dual-fan", "model": "gpu_dual_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rtx5060", "name": "GeForce RTX 5060 8 ГБ", "brand": "NVIDIA", "price": 31990, "score": 40, "workScore": 44,
+      "specs": { "vramGb": 8 },
+      "compat": { "tdpW": 145, "lengthMm": 230 },
+      "visual": { "color": "#1E2127", "accent": "#84CC16", "style": "dual-fan", "model": "gpu_dual_fan.glb" }
+    },
+    {
+      "id": "gpu-rx9060xt", "name": "Radeon RX 9060 XT 16 ГБ", "brand": "AMD", "price": 39990, "score": 47, "workScore": 44,
+      "specs": { "vramGb": 16 },
+      "compat": { "tdpW": 180, "lengthMm": 270 },
+      "visual": { "color": "#1D2026", "accent": "#EF4444", "style": "dual-fan", "model": "gpu_dual_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rtx5060ti", "name": "GeForce RTX 5060 Ti 16 ГБ", "brand": "NVIDIA", "price": 44990, "score": 49, "workScore": 56,
+      "specs": { "vramGb": 16 },
+      "compat": { "tdpW": 180, "lengthMm": 250 },
+      "visual": { "color": "#E8EAEE", "accent": "#84CC16", "style": "dual-fan", "model": "gpu_dual_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rx7800xt", "name": "Radeon RX 7800 XT 16 ГБ", "brand": "AMD", "price": 52990, "score": 57, "workScore": 54,
+      "specs": { "vramGb": 16 },
+      "compat": { "tdpW": 263, "lengthMm": 300 },
+      "visual": { "color": "#1B1D23", "accent": "#EF4444", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rtx5070", "name": "GeForce RTX 5070 12 ГБ", "brand": "NVIDIA", "price": 59990, "score": 62, "workScore": 68,
+      "specs": { "vramGb": 12 },
+      "compat": { "tdpW": 250, "lengthMm": 285 },
+      "visual": { "color": "#1A1C21", "accent": "#84CC16", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rx9070", "name": "Radeon RX 9070 16 ГБ", "brand": "AMD", "price": 62990, "score": 66, "workScore": 62,
+      "specs": { "vramGb": 16 },
+      "compat": { "tdpW": 220, "lengthMm": 290 },
+      "visual": { "color": "#1C1E24", "accent": "#EF4444", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rx9070xt", "name": "Radeon RX 9070 XT 16 ГБ", "brand": "AMD", "price": 74990, "score": 74, "workScore": 70,
+      "specs": { "vramGb": 16 },
+      "compat": { "tdpW": 304, "lengthMm": 320 },
+      "visual": { "color": "#E6E8EC", "accent": "#EF4444", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rtx5070ti", "name": "GeForce RTX 5070 Ti 16 ГБ", "brand": "NVIDIA", "price": 89990, "score": 76, "workScore": 84,
+      "specs": { "vramGb": 16 },
+      "compat": { "tdpW": 300, "lengthMm": 305 },
+      "visual": { "color": "#191B20", "accent": "#84CC16", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rx7900xtx", "name": "Radeon RX 7900 XTX 24 ГБ", "brand": "AMD", "price": 104990, "score": 80, "workScore": 78,
+      "specs": { "vramGb": 24 },
+      "compat": { "tdpW": 355, "lengthMm": 330 },
+      "visual": { "color": "#17191E", "accent": "#EF4444", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rtx5080", "name": "GeForce RTX 5080 16 ГБ", "brand": "NVIDIA", "price": 129990, "score": 86, "workScore": 92,
+      "specs": { "vramGb": 16 },
+      "compat": { "tdpW": 360, "lengthMm": 320 },
+      "visual": { "color": "#16181C", "accent": "#84CC16", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    },
+    {
+      "id": "gpu-rtx5090", "name": "GeForce RTX 5090 32 ГБ", "brand": "NVIDIA", "price": 299990, "score": 100, "workScore": 100,
+      "specs": { "vramGb": 32 },
+      "compat": { "tdpW": 575, "lengthMm": 340 },
+      "visual": { "color": "#121316", "accent": "#84CC16", "style": "triple-fan", "model": "gpu_triple_fan.glb", "rgb": true }
+    }
+  ]
+}

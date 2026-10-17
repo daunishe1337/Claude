@@ -1,0 +1,77 @@
+{
+  "category": "CASE",
+  "items": [
+    {
+      "id": "case-cylon-mini", "name": "Aerocool Cylon Mini", "brand": "Aerocool", "price": 2990, "score": 12,
+      "specs": { "size": "Mini-Tower", "fansIncluded": 1 },
+      "compat": { "supportedFormFactors": ["mATX", "ITX"], "maxGpuLengthMm": 290, "maxCoolerHeightMm": 150, "maxRadiatorMm": 0 },
+      "visual": { "color": "#15161A", "accent": "#2A2D35", "style": "mini", "rgb": true }
+    },
+    {
+      "id": "case-zalman-s4", "name": "ZALMAN S4 Plus", "brand": "ZALMAN", "price": 3490, "score": 18,
+      "specs": { "size": "Mid-Tower", "fansIncluded": 2 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 320, "maxCoolerHeightMm": 160, "maxRadiatorMm": 240 },
+      "visual": { "color": "#17181C", "accent": "#30333B", "style": "mid" }
+    },
+    {
+      "id": "case-cc560", "name": "DEEPCOOL CC560 V2", "brand": "DEEPCOOL", "price": 5490, "score": 34,
+      "specs": { "size": "Mid-Tower", "fansIncluded": 4 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 370, "maxCoolerHeightMm": 163, "maxRadiatorMm": 360 },
+      "visual": { "color": "#141519", "accent": "#26292F", "style": "mid", "rgb": true }
+    },
+    {
+      "id": "case-jonsbo-d31", "name": "Jonsbo D31 MESH White", "brand": "Jonsbo", "price": 7490, "score": 44,
+      "specs": { "size": "Micro-Tower", "fansIncluded": 0 },
+      "compat": { "supportedFormFactors": ["mATX", "ITX"], "maxGpuLengthMm": 400, "maxCoolerHeightMm": 168, "maxRadiatorMm": 360 },
+      "visual": { "color": "#E6E8EC", "accent": "#C9CDD4", "style": "mini" }
+    },
+    {
+      "id": "case-air903", "name": "MONTECH AIR 903 MAX", "brand": "MONTECH", "price": 7990, "score": 52,
+      "specs": { "size": "Mid-Tower", "fansIncluded": 4 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 400, "maxCoolerHeightMm": 180, "maxRadiatorMm": 360 },
+      "visual": { "color": "#121316", "accent": "#23262C", "style": "mid" }
+    },
+    {
+      "id": "case-nr200p", "name": "Cooler Master NR200P", "brand": "Cooler Master", "price": 8990, "score": 50,
+      "specs": { "size": "SFF (ITX)", "fansIncluded": 2 },
+      "compat": { "supportedFormFactors": ["ITX"], "maxGpuLengthMm": 330, "maxCoolerHeightMm": 155, "maxRadiatorMm": 280 },
+      "visual": { "color": "#1A1B1F", "accent": "#2E3138", "style": "itx" }
+    },
+    {
+      "id": "case-h5-flow", "name": "NZXT H5 Flow (2024)", "brand": "NZXT", "price": 9490, "score": 56,
+      "specs": { "size": "Mid-Tower", "fansIncluded": 2 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 365, "maxCoolerHeightMm": 165, "maxRadiatorMm": 280 },
+      "visual": { "color": "#ECEEF2", "accent": "#D5D9E0", "style": "mid" }
+    },
+    {
+      "id": "case-lancool216", "name": "Lian Li LANCOOL 216 RGB", "brand": "Lian Li", "price": 9990, "score": 62,
+      "specs": { "size": "Mid-Tower", "fansIncluded": 3 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 392, "maxCoolerHeightMm": 180, "maxRadiatorMm": 360 },
+      "visual": { "color": "#131417", "accent": "#26282E", "style": "mid", "rgb": true }
+    },
+    {
+      "id": "case-north", "name": "Fractal Design North", "brand": "Fractal Design", "price": 13990, "score": 72,
+      "specs": { "size": "Mid-Tower", "fansIncluded": 2 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 355, "maxCoolerHeightMm": 170, "maxRadiatorMm": 360 },
+      "visual": { "color": "#1C1D21", "accent": "#8B5A2B", "style": "wood" }
+    },
+    {
+      "id": "case-o11-evo", "name": "Lian Li O11 Dynamic EVO", "brand": "Lian Li", "price": 16990, "score": 80,
+      "specs": { "size": "Mid-Tower (2 камеры)", "fansIncluded": 0 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 426, "maxCoolerHeightMm": 167, "maxRadiatorMm": 360 },
+      "visual": { "color": "#141518", "accent": "#2A2C31", "style": "panoramic" }
+    },
+    {
+      "id": "case-y60", "name": "HYTE Y60 White", "brand": "HYTE", "price": 17990, "score": 82,
+      "specs": { "size": "Mid-Tower (панорамный)", "fansIncluded": 3 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 375, "maxCoolerHeightMm": 160, "maxRadiatorMm": 360 },
+      "visual": { "color": "#ECEEF2", "accent": "#FFFFFF", "style": "panoramic", "rgb": true }
+    },
+    {
+      "id": "case-dbp901", "name": "be quiet! Dark Base Pro 901", "brand": "be quiet!", "price": 29990, "score": 95,
+      "specs": { "size": "Full-Tower", "fansIncluded": 3 },
+      "compat": { "supportedFormFactors": ["ATX", "mATX", "ITX"], "maxGpuLengthMm": 472, "maxCoolerHeightMm": 185, "maxRadiatorMm": 420 },
+      "visual": { "color": "#0F1012", "accent": "#F59E0B", "style": "full", "rgb": true }
+    }
+  ]
+}

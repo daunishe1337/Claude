@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Передний план иконки: неоновый изометрический корпус (оригинальный знак NeoRig) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Внешний контур куба -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFA855F7"
+        android:strokeWidth="4"
+        android:strokeLineJoin="round"
+        android:pathData="M54,28 L76,40.5 L76,65.5 L54,78 L32,65.5 L32,40.5 Z" />
+    <!-- Внутренние рёбра -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF22D3EE"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M32,40.5 L54,53 L76,40.5 M54,53 L54,78" />
+    <!-- «Вентилятор» на боковой грани -->
+    <path
+        android:fillColor="#FF22D3EE"
+        android:pathData="M64,58 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+</vector>

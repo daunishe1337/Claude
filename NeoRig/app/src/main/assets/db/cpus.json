@@ -1,0 +1,125 @@
+{
+  "category": "CPU",
+  "items": [
+    {
+      "id": "cpu-g7400", "name": "Pentium Gold G7400", "brand": "Intel", "price": 4990, "score": 12, "workScore": 9,
+      "specs": { "cores": 2, "threads": 4, "baseGhz": 3.7, "boostGhz": 3.7, "cacheMb": 6, "integratedGraphics": true },
+      "compat": { "socket": "LGA1700", "memoryTypes": ["DDR4", "DDR5"], "tdpW": 46 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r5-5500", "name": "Ryzen 5 5500", "brand": "AMD", "price": 6990, "score": 32, "workScore": 30,
+      "specs": { "cores": 6, "threads": 12, "baseGhz": 3.6, "boostGhz": 4.2, "cacheMb": 16, "integratedGraphics": false },
+      "compat": { "socket": "AM4", "memoryTypes": ["DDR4"], "tdpW": 65 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-i3-12100f", "name": "Core i3-12100F", "brand": "Intel", "price": 7490, "score": 30, "workScore": 22,
+      "specs": { "cores": 4, "threads": 8, "baseGhz": 3.3, "boostGhz": 4.3, "cacheMb": 12, "integratedGraphics": false },
+      "compat": { "socket": "LGA1700", "memoryTypes": ["DDR4", "DDR5"], "tdpW": 89 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r5-5600", "name": "Ryzen 5 5600", "brand": "AMD", "price": 8990, "score": 38, "workScore": 34,
+      "specs": { "cores": 6, "threads": 12, "baseGhz": 3.5, "boostGhz": 4.4, "cacheMb": 32, "integratedGraphics": false },
+      "compat": { "socket": "AM4", "memoryTypes": ["DDR4"], "tdpW": 65 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-i3-12100", "name": "Core i3-12100", "brand": "Intel", "price": 9290, "score": 30, "workScore": 22,
+      "specs": { "cores": 4, "threads": 8, "baseGhz": 3.3, "boostGhz": 4.3, "cacheMb": 12, "integratedGraphics": true },
+      "compat": { "socket": "LGA1700", "memoryTypes": ["DDR4", "DDR5"], "tdpW": 89 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r5-5600g", "name": "Ryzen 5 5600G", "brand": "AMD", "price": 10490, "score": 34, "workScore": 32,
+      "specs": { "cores": 6, "threads": 12, "baseGhz": 3.9, "boostGhz": 4.4, "cacheMb": 16, "integratedGraphics": true },
+      "compat": { "socket": "AM4", "memoryTypes": ["DDR4"], "tdpW": 65 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-i5-12400f", "name": "Core i5-12400F", "brand": "Intel", "price": 10490, "score": 42, "workScore": 36,
+      "specs": { "cores": 6, "threads": 12, "baseGhz": 2.5, "boostGhz": 4.4, "cacheMb": 18, "integratedGraphics": false },
+      "compat": { "socket": "LGA1700", "memoryTypes": ["DDR4", "DDR5"], "tdpW": 117 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r5-7500f", "name": "Ryzen 5 7500F", "brand": "AMD", "price": 13490, "score": 54, "workScore": 46,
+      "specs": { "cores": 6, "threads": 12, "baseGhz": 3.7, "boostGhz": 5.0, "cacheMb": 32, "integratedGraphics": false },
+      "compat": { "socket": "AM5", "memoryTypes": ["DDR5"], "tdpW": 65 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-i5-13400f", "name": "Core i5-13400F", "brand": "Intel", "price": 15990, "score": 50, "workScore": 52,
+      "specs": { "cores": 10, "threads": 16, "baseGhz": 2.5, "boostGhz": 4.6, "cacheMb": 20, "integratedGraphics": false },
+      "compat": { "socket": "LGA1700", "memoryTypes": ["DDR4", "DDR5"], "tdpW": 148 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r7-5700x3d", "name": "Ryzen 7 5700X3D", "brand": "AMD", "price": 17990, "score": 58, "workScore": 48,
+      "specs": { "cores": 8, "threads": 16, "baseGhz": 3.0, "boostGhz": 4.1, "cacheMb": 96, "integratedGraphics": false },
+      "compat": { "socket": "AM4", "memoryTypes": ["DDR4"], "tdpW": 105 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r5-9600x", "name": "Ryzen 5 9600X", "brand": "AMD", "price": 21990, "score": 64, "workScore": 54,
+      "specs": { "cores": 6, "threads": 12, "baseGhz": 3.9, "boostGhz": 5.4, "cacheMb": 32, "integratedGraphics": true },
+      "compat": { "socket": "AM5", "memoryTypes": ["DDR5"], "tdpW": 105 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-i5-14600kf", "name": "Core i5-14600KF", "brand": "Intel", "price": 22990, "score": 66, "workScore": 72,
+      "specs": { "cores": 14, "threads": 20, "baseGhz": 3.5, "boostGhz": 5.3, "cacheMb": 24, "integratedGraphics": false },
+      "compat": { "socket": "LGA1700", "memoryTypes": ["DDR4", "DDR5"], "tdpW": 181 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-u5-245k", "name": "Core Ultra 5 245K", "brand": "Intel", "price": 25990, "score": 62, "workScore": 74,
+      "specs": { "cores": 14, "threads": 14, "baseGhz": 4.2, "boostGhz": 5.2, "cacheMb": 24, "integratedGraphics": true },
+      "compat": { "socket": "LGA1851", "memoryTypes": ["DDR5"], "tdpW": 159 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r7-9700x", "name": "Ryzen 7 9700X", "brand": "AMD", "price": 29990, "score": 68, "workScore": 66,
+      "specs": { "cores": 8, "threads": 16, "baseGhz": 3.8, "boostGhz": 5.5, "cacheMb": 32, "integratedGraphics": true },
+      "compat": { "socket": "AM5", "memoryTypes": ["DDR5"], "tdpW": 105 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-i7-14700kf", "name": "Core i7-14700KF", "brand": "Intel", "price": 33990, "score": 74, "workScore": 88,
+      "specs": { "cores": 20, "threads": 28, "baseGhz": 3.4, "boostGhz": 5.6, "cacheMb": 33, "integratedGraphics": false },
+      "compat": { "socket": "LGA1700", "memoryTypes": ["DDR4", "DDR5"], "tdpW": 253 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-u7-265k", "name": "Core Ultra 7 265K", "brand": "Intel", "price": 36990, "score": 70, "workScore": 90,
+      "specs": { "cores": 20, "threads": 20, "baseGhz": 3.9, "boostGhz": 5.5, "cacheMb": 30, "integratedGraphics": true },
+      "compat": { "socket": "LGA1851", "memoryTypes": ["DDR5"], "tdpW": 250 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r9-9900x", "name": "Ryzen 9 9900X", "brand": "AMD", "price": 39990, "score": 72, "workScore": 84,
+      "specs": { "cores": 12, "threads": 24, "baseGhz": 4.4, "boostGhz": 5.6, "cacheMb": 64, "integratedGraphics": true },
+      "compat": { "socket": "AM5", "memoryTypes": ["DDR5"], "tdpW": 120 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r7-9800x3d", "name": "Ryzen 7 9800X3D", "brand": "AMD", "price": 49990, "score": 100, "workScore": 70,
+      "specs": { "cores": 8, "threads": 16, "baseGhz": 4.7, "boostGhz": 5.2, "cacheMb": 96, "integratedGraphics": true },
+      "compat": { "socket": "AM5", "memoryTypes": ["DDR5"], "tdpW": 120 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    },
+    {
+      "id": "cpu-u9-285k", "name": "Core Ultra 9 285K", "brand": "Intel", "price": 57990, "score": 74, "workScore": 98,
+      "specs": { "cores": 24, "threads": 24, "baseGhz": 3.7, "boostGhz": 5.7, "cacheMb": 36, "integratedGraphics": true },
+      "compat": { "socket": "LGA1851", "memoryTypes": ["DDR5"], "tdpW": 250 },
+      "visual": { "color": "#B9BEC8", "accent": "#3B82F6", "style": "cpu" }
+    },
+    {
+      "id": "cpu-r9-9950x", "name": "Ryzen 9 9950X", "brand": "AMD", "price": 57990, "score": 76, "workScore": 100,
+      "specs": { "cores": 16, "threads": 32, "baseGhz": 4.3, "boostGhz": 5.7, "cacheMb": 64, "integratedGraphics": true },
+      "compat": { "socket": "AM5", "memoryTypes": ["DDR5"], "tdpW": 170 },
+      "visual": { "color": "#B9BEC8", "accent": "#F97316", "style": "cpu" }
+    }
+  ]
+}

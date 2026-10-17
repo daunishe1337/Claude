@@ -1,0 +1,101 @@
+{
+  "category": "MOTHERBOARD",
+  "items": [
+    {
+      "id": "mb-a520m", "name": "ASRock A520M-HDV", "brand": "ASRock", "price": 5290, "score": 22,
+      "specs": { "chipset": "A520", "m2Slots": 1, "wifi": false },
+      "compat": { "socket": "AM4", "memoryType": "DDR4", "formFactor": "mATX" },
+      "visual": { "color": "#1B1E25", "accent": "#5B6170", "style": "board" }
+    },
+    {
+      "id": "mb-h610m", "name": "Gigabyte H610M S2H DDR4", "brand": "Gigabyte", "price": 5990, "score": 22,
+      "specs": { "chipset": "H610", "m2Slots": 1, "wifi": false },
+      "compat": { "socket": "LGA1700", "memoryType": "DDR4", "formFactor": "mATX" },
+      "visual": { "color": "#1B1E25", "accent": "#5B6170", "style": "board" }
+    },
+    {
+      "id": "mb-a620m", "name": "ASRock A620M-HDV/M.2+", "brand": "ASRock", "price": 8290, "score": 30,
+      "specs": { "chipset": "A620", "m2Slots": 2, "wifi": false },
+      "compat": { "socket": "AM5", "memoryType": "DDR5", "formFactor": "mATX" },
+      "visual": { "color": "#1B1E25", "accent": "#6B7280", "style": "board" }
+    },
+    {
+      "id": "mb-b550m", "name": "MSI B550M PRO-VDH", "brand": "MSI", "price": 8490, "score": 44,
+      "specs": { "chipset": "B550", "m2Slots": 2, "wifi": false },
+      "compat": { "socket": "AM4", "memoryType": "DDR4", "formFactor": "mATX" },
+      "visual": { "color": "#16181E", "accent": "#7C8494", "style": "board" }
+    },
+    {
+      "id": "mb-b760m-d4", "name": "MSI PRO B760M-A DDR4", "brand": "MSI", "price": 10990, "score": 46,
+      "specs": { "chipset": "B760", "m2Slots": 2, "wifi": false },
+      "compat": { "socket": "LGA1700", "memoryType": "DDR4", "formFactor": "mATX" },
+      "visual": { "color": "#16181E", "accent": "#8A93A3", "style": "board" }
+    },
+    {
+      "id": "mb-b650m", "name": "MSI PRO B650M-P", "brand": "MSI", "price": 11990, "score": 48,
+      "specs": { "chipset": "B650", "m2Slots": 2, "wifi": false },
+      "compat": { "socket": "AM5", "memoryType": "DDR5", "formFactor": "mATX" },
+      "visual": { "color": "#16181E", "accent": "#8A93A3", "style": "board" }
+    },
+    {
+      "id": "mb-b550-atx", "name": "Gigabyte B550 AORUS ELITE V2", "brand": "Gigabyte", "price": 12990, "score": 58,
+      "specs": { "chipset": "B550", "m2Slots": 2, "wifi": false },
+      "compat": { "socket": "AM4", "memoryType": "DDR4", "formFactor": "ATX" },
+      "visual": { "color": "#121318", "accent": "#9CA3AF", "style": "board", "rgb": true }
+    },
+    {
+      "id": "mb-b860m", "name": "ASUS PRIME B860M-A WIFI", "brand": "ASUS", "price": 14990, "score": 56,
+      "specs": { "chipset": "B860", "m2Slots": 2, "wifi": true },
+      "compat": { "socket": "LGA1851", "memoryType": "DDR5", "formFactor": "mATX" },
+      "visual": { "color": "#1A1C22", "accent": "#C9CED6", "style": "board" }
+    },
+    {
+      "id": "mb-b760-d5", "name": "ASUS TUF GAMING B760-PLUS WIFI", "brand": "ASUS", "price": 16490, "score": 62,
+      "specs": { "chipset": "B760", "m2Slots": 3, "wifi": true },
+      "compat": { "socket": "LGA1700", "memoryType": "DDR5", "formFactor": "ATX" },
+      "visual": { "color": "#1A1B1F", "accent": "#A8A29E", "style": "board" }
+    },
+    {
+      "id": "mb-b650-atx", "name": "Gigabyte B650 GAMING X AX", "brand": "Gigabyte", "price": 16990, "score": 64,
+      "specs": { "chipset": "B650", "m2Slots": 3, "wifi": true },
+      "compat": { "socket": "AM5", "memoryType": "DDR5", "formFactor": "ATX" },
+      "visual": { "color": "#15171C", "accent": "#9CA3AF", "style": "board" }
+    },
+    {
+      "id": "mb-x870", "name": "ASUS TUF GAMING X870-PLUS WIFI", "brand": "ASUS", "price": 26990, "score": 80,
+      "specs": { "chipset": "X870", "m2Slots": 4, "wifi": true },
+      "compat": { "socket": "AM5", "memoryType": "DDR5", "formFactor": "ATX" },
+      "visual": { "color": "#17181C", "accent": "#B5A68A", "style": "board", "rgb": true }
+    },
+    {
+      "id": "mb-b650i", "name": "ASUS ROG STRIX B650E-I GAMING WIFI", "brand": "ASUS", "price": 27990, "score": 74,
+      "specs": { "chipset": "B650E", "m2Slots": 2, "wifi": true },
+      "compat": { "socket": "AM5", "memoryType": "DDR5", "formFactor": "ITX" },
+      "visual": { "color": "#111216", "accent": "#4B5563", "style": "board", "rgb": true }
+    },
+    {
+      "id": "mb-z790", "name": "MSI MAG Z790 TOMAHAWK WIFI", "brand": "MSI", "price": 27990, "score": 80,
+      "specs": { "chipset": "Z790", "m2Slots": 4, "wifi": true },
+      "compat": { "socket": "LGA1700", "memoryType": "DDR5", "formFactor": "ATX" },
+      "visual": { "color": "#141519", "accent": "#7D8796", "style": "board" }
+    },
+    {
+      "id": "mb-z890", "name": "Gigabyte Z890 AORUS ELITE WIFI7", "brand": "Gigabyte", "price": 29990, "score": 82,
+      "specs": { "chipset": "Z890", "m2Slots": 4, "wifi": true },
+      "compat": { "socket": "LGA1851", "memoryType": "DDR5", "formFactor": "ATX" },
+      "visual": { "color": "#121317", "accent": "#A1A8B5", "style": "board", "rgb": true }
+    },
+    {
+      "id": "mb-x870e", "name": "MSI MPG X870E CARBON WIFI", "brand": "MSI", "price": 44990, "score": 95,
+      "specs": { "chipset": "X870E", "m2Slots": 4, "wifi": true },
+      "compat": { "socket": "AM5", "memoryType": "DDR5", "formFactor": "ATX" },
+      "visual": { "color": "#0E0F12", "accent": "#2F3440", "style": "board", "rgb": true }
+    },
+    {
+      "id": "mb-z890-white", "name": "ASUS ROG STRIX Z890-A GAMING WIFI", "brand": "ASUS", "price": 44990, "score": 95,
+      "specs": { "chipset": "Z890", "m2Slots": 5, "wifi": true },
+      "compat": { "socket": "LGA1851", "memoryType": "DDR5", "formFactor": "ATX" },
+      "visual": { "color": "#D9DCE3", "accent": "#F1F3F7", "style": "board", "rgb": true }
+    }
+  ]
+}

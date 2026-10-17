@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="neo_background">#FF090B12</color>
+    <color name="neo_surface">#FF121624</color>
+    <color name="neo_violet">#FFA855F7</color>
+    <color name="neo_teal">#FF22D3EE</color>
+</resources>

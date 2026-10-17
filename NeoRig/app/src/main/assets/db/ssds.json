@@ -1,0 +1,60 @@
+{
+  "category": "SSD",
+  "items": [
+    {
+      "id": "ssd-256-g3", "name": "Netac N535N 256 ГБ", "brand": "Netac", "price": 1990, "score": 10,
+      "specs": { "capacityGb": 256, "readMbps": 2100, "writeMbps": 1100, "pcie": "PCIe 3.0 x4" },
+      "visual": { "color": "#0F3D2E", "accent": "#1F2937", "style": "m2" }
+    },
+    {
+      "id": "ssd-500-g4", "name": "Kingston NV3 500 ГБ", "brand": "Kingston", "price": 3190, "score": 24,
+      "specs": { "capacityGb": 500, "readMbps": 5000, "writeMbps": 3000, "pcie": "PCIe 4.0 x4" },
+      "visual": { "color": "#0F3D2E", "accent": "#1E3A8A", "style": "m2" }
+    },
+    {
+      "id": "ssd-1tb-g3", "name": "ADATA Legend 710 1 ТБ", "brand": "ADATA", "price": 5290, "score": 36,
+      "specs": { "capacityGb": 1000, "readMbps": 2400, "writeMbps": 1800, "pcie": "PCIe 3.0 x4" },
+      "visual": { "color": "#0F3D2E", "accent": "#374151", "style": "m2" }
+    },
+    {
+      "id": "ssd-1tb-g4", "name": "Kingston NV3 1 ТБ", "brand": "Kingston", "price": 5990, "score": 46,
+      "specs": { "capacityGb": 1000, "readMbps": 6000, "writeMbps": 4000, "pcie": "PCIe 4.0 x4" },
+      "visual": { "color": "#0F3D2E", "accent": "#1E3A8A", "style": "m2" }
+    },
+    {
+      "id": "ssd-1tb-990evo", "name": "Samsung 990 EVO Plus 1 ТБ", "brand": "Samsung", "price": 8990, "score": 56,
+      "specs": { "capacityGb": 1000, "readMbps": 7150, "writeMbps": 6300, "pcie": "PCIe 4.0 x4" },
+      "visual": { "color": "#111827", "accent": "#2563EB", "style": "m2" }
+    },
+    {
+      "id": "ssd-1tb-sn850x", "name": "WD_BLACK SN850X 1 ТБ (радиатор)", "brand": "WD", "price": 10990, "score": 62,
+      "specs": { "capacityGb": 1000, "readMbps": 7300, "writeMbps": 6300, "pcie": "PCIe 4.0 x4" },
+      "visual": { "color": "#111111", "accent": "#4B5563", "style": "m2-heatsink", "rgb": true }
+    },
+    {
+      "id": "ssd-2tb-kc3000", "name": "Kingston KC3000 2 ТБ", "brand": "Kingston", "price": 13990, "score": 74,
+      "specs": { "capacityGb": 2000, "readMbps": 7000, "writeMbps": 7000, "pcie": "PCIe 4.0 x4" },
+      "visual": { "color": "#111827", "accent": "#374151", "style": "m2-heatsink" }
+    },
+    {
+      "id": "ssd-2tb-990pro", "name": "Samsung 990 PRO 2 ТБ", "brand": "Samsung", "price": 17990, "score": 82,
+      "specs": { "capacityGb": 2000, "readMbps": 7450, "writeMbps": 6900, "pcie": "PCIe 4.0 x4" },
+      "visual": { "color": "#111827", "accent": "#F97316", "style": "m2" }
+    },
+    {
+      "id": "ssd-2tb-t705", "name": "Crucial T705 2 ТБ", "brand": "Crucial", "price": 27990, "score": 88,
+      "specs": { "capacityGb": 2000, "readMbps": 14500, "writeMbps": 12700, "pcie": "PCIe 5.0 x4" },
+      "visual": { "color": "#0B0C0F", "accent": "#6B7280", "style": "m2-heatsink" }
+    },
+    {
+      "id": "ssd-4tb-sn850x", "name": "WD_BLACK SN850X 4 ТБ", "brand": "WD", "price": 29990, "score": 92,
+      "specs": { "capacityGb": 4000, "readMbps": 7300, "writeMbps": 6600, "pcie": "PCIe 4.0 x4" },
+      "visual": { "color": "#111111", "accent": "#4B5563", "style": "m2-heatsink", "rgb": true }
+    },
+    {
+      "id": "ssd-4tb-9100pro", "name": "Samsung 9100 PRO 4 ТБ", "brand": "Samsung", "price": 49990, "score": 100,
+      "specs": { "capacityGb": 4000, "readMbps": 14800, "writeMbps": 13400, "pcie": "PCIe 5.0 x4" },
+      "visual": { "color": "#0B0C0F", "accent": "#F97316", "style": "m2-heatsink" }
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "category": "RAM",
+  "items": [
+    {
+      "id": "ram-d4-16-3200", "name": "Kingston FURY Beast 16 ГБ (2×8) DDR4-3200", "brand": "Kingston", "price": 3290, "score": 30, "workScore": 22,
+      "specs": { "capacityGb": 16, "modules": 2, "speedMhz": 3200 },
+      "compat": { "memoryType": "DDR4" },
+      "visual": { "color": "#1C1D22", "accent": "#3B3F4A", "style": "dimm", "model": "ram_stick.glb" }
+    },
+    {
+      "id": "ram-d4-16-3600-rgb", "name": "ADATA XPG Spectrix D35G 16 ГБ (2×8) DDR4-3600", "brand": "ADATA", "price": 4290, "score": 36, "workScore": 25,
+      "specs": { "capacityGb": 16, "modules": 2, "speedMhz": 3600 },
+      "compat": { "memoryType": "DDR4" },
+      "visual": { "color": "#202228", "accent": "#6B7280", "style": "dimm", "model": "ram_stick.glb", "rgb": true }
+    },
+    {
+      "id": "ram-d5-16-5600", "name": "Kingston FURY Beast 16 ГБ (2×8) DDR5-5600", "brand": "Kingston", "price": 5490, "score": 44, "workScore": 28,
+      "specs": { "capacityGb": 16, "modules": 2, "speedMhz": 5600 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#1C1D22", "accent": "#3B3F4A", "style": "dimm", "model": "ram_stick.glb" }
+    },
+    {
+      "id": "ram-d4-32-3200", "name": "Patriot Viper Steel 32 ГБ (2×16) DDR4-3200", "brand": "Patriot", "price": 5990, "score": 50, "workScore": 50,
+      "specs": { "capacityGb": 32, "modules": 2, "speedMhz": 3200 },
+      "compat": { "memoryType": "DDR4" },
+      "visual": { "color": "#4B5058", "accent": "#9CA3AF", "style": "dimm", "model": "ram_stick.glb" }
+    },
+    {
+      "id": "ram-d4-32-3600-rgb", "name": "Corsair Vengeance RGB Pro 32 ГБ (2×16) DDR4-3600", "brand": "Corsair", "price": 7990, "score": 56, "workScore": 54,
+      "specs": { "capacityGb": 32, "modules": 2, "speedMhz": 3600 },
+      "compat": { "memoryType": "DDR4" },
+      "visual": { "color": "#15161A", "accent": "#2D3038", "style": "dimm", "model": "ram_stick.glb", "rgb": true }
+    },
+    {
+      "id": "ram-d5-32-6000", "name": "G.Skill Flare X5 32 ГБ (2×16) DDR5-6000", "brand": "G.Skill", "price": 9990, "score": 74, "workScore": 62,
+      "specs": { "capacityGb": 32, "modules": 2, "speedMhz": 6000 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#17181C", "accent": "#3F4451", "style": "dimm", "model": "ram_stick.glb" }
+    },
+    {
+      "id": "ram-d5-32-6000-rgb", "name": "Kingston FURY Beast RGB 32 ГБ (2×16) DDR5-6000", "brand": "Kingston", "price": 11490, "score": 76, "workScore": 63,
+      "specs": { "capacityGb": 32, "modules": 2, "speedMhz": 6000 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#1A1B20", "accent": "#4B5563", "style": "dimm", "model": "ram_stick.glb", "rgb": true }
+    },
+    {
+      "id": "ram-d4-64-3200", "name": "Kingston FURY Beast 64 ГБ (2×32) DDR4-3200", "brand": "Kingston", "price": 11990, "score": 60, "workScore": 76,
+      "specs": { "capacityGb": 64, "modules": 2, "speedMhz": 3200 },
+      "compat": { "memoryType": "DDR4" },
+      "visual": { "color": "#1C1D22", "accent": "#3B3F4A", "style": "dimm", "model": "ram_stick.glb" }
+    },
+    {
+      "id": "ram-d5-32-6400-white", "name": "TeamGroup T-Force Delta RGB White 32 ГБ (2×16) DDR5-6400", "brand": "TeamGroup", "price": 12990, "score": 78, "workScore": 64,
+      "specs": { "capacityGb": 32, "modules": 2, "speedMhz": 6400 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#E9EBEF", "accent": "#FFFFFF", "style": "dimm", "model": "ram_stick.glb", "rgb": true }
+    },
+    {
+      "id": "ram-d5-48-6000", "name": "Corsair Vengeance 48 ГБ (2×24) DDR5-6000", "brand": "Corsair", "price": 14990, "score": 82, "workScore": 74,
+      "specs": { "capacityGb": 48, "modules": 2, "speedMhz": 6000 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#121316", "accent": "#2A2D35", "style": "dimm", "model": "ram_stick.glb" }
+    },
+    {
+      "id": "ram-d5-64-6000-rgb", "name": "G.Skill Trident Z5 RGB 64 ГБ (2×32) DDR5-6000", "brand": "G.Skill", "price": 21990, "score": 90, "workScore": 86,
+      "specs": { "capacityGb": 64, "modules": 2, "speedMhz": 6000 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#1A1B1F", "accent": "#C0C4CC", "style": "dimm", "model": "ram_stick.glb", "rgb": true }
+    },
+    {
+      "id": "ram-d5-96-6400-rgb", "name": "G.Skill Trident Z5 RGB 96 ГБ (2×48) DDR5-6400", "brand": "G.Skill", "price": 34990, "score": 96, "workScore": 94,
+      "specs": { "capacityGb": 96, "modules": 2, "speedMhz": 6400 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#1A1B1F", "accent": "#C0C4CC", "style": "dimm", "model": "ram_stick.glb", "rgb": true }
+    },
+    {
+      "id": "ram-d5-128-5600", "name": "Kingston FURY Beast 128 ГБ (4×32) DDR5-5600", "brand": "Kingston", "price": 44990, "score": 92, "workScore": 100,
+      "specs": { "capacityGb": 128, "modules": 4, "speedMhz": 5600 },
+      "compat": { "memoryType": "DDR5" },
+      "visual": { "color": "#1C1D22", "accent": "#3B3F4A", "style": "dimm", "model": "ram_stick.glb" }
+    }
+  ]
+}

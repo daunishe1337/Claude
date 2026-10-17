@@ -1,0 +1,75 @@
+{
+  "category": "MONITOR",
+  "items": [
+    {
+      "id": "mon-fhd-22-75", "name": "Philips 221V8A 21.5\"", "brand": "Philips", "price": 6990, "score": 10,
+      "specs": { "sizeInch": 21.5, "resolution": "1080p", "refreshHz": 75, "panel": "VA" },
+      "visual": { "color": "#1A1B1F", "accent": "#2A2C31", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-fhd-24-100", "name": "AOC 24B3HA2 23.8\"", "brand": "AOC", "price": 9490, "score": 20,
+      "specs": { "sizeInch": 23.8, "resolution": "1080p", "refreshHz": 100, "panel": "IPS" },
+      "visual": { "color": "#18191D", "accent": "#2A2C31", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-fhd-24-180", "name": "MSI G244F E2 23.8\"", "brand": "MSI", "price": 12990, "score": 36,
+      "specs": { "sizeInch": 23.8, "resolution": "1080p", "refreshHz": 180, "panel": "IPS" },
+      "visual": { "color": "#141518", "accent": "#EF4444", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-fhd-25-240", "name": "AOC 25G3ZM 24.5\"", "brand": "AOC", "price": 15990, "score": 46,
+      "specs": { "sizeInch": 24.5, "resolution": "1080p", "refreshHz": 240, "panel": "VA" },
+      "visual": { "color": "#141518", "accent": "#EF4444", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-qhd-27-75", "name": "AOC Q27B3MA 27\"", "brand": "AOC", "price": 13990, "score": 30,
+      "specs": { "sizeInch": 27.0, "resolution": "1440p", "refreshHz": 75, "panel": "VA" },
+      "visual": { "color": "#1A1B1F", "accent": "#2A2C31", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-qhd-27-180", "name": "MSI MAG 275QF 27\"", "brand": "MSI", "price": 19990, "score": 50,
+      "specs": { "sizeInch": 27.0, "resolution": "1440p", "refreshHz": 180, "panel": "IPS" },
+      "visual": { "color": "#141518", "accent": "#EF4444", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-qhd-32-165", "name": "AOC CQ32G3SU 31.5\" (изогнутый)", "brand": "AOC", "price": 25990, "score": 56,
+      "specs": { "sizeInch": 31.5, "resolution": "1440p", "refreshHz": 165, "panel": "VA" },
+      "visual": { "color": "#141518", "accent": "#EF4444", "style": "curved", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-qhd-27-240", "name": "Samsung Odyssey G6 27\"", "brand": "Samsung", "price": 36990, "score": 70,
+      "specs": { "sizeInch": 27.0, "resolution": "1440p", "refreshHz": 240, "panel": "IPS" },
+      "visual": { "color": "#E5E7EB", "accent": "#CBD5E1", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-qhd-27-oled", "name": "MSI MAG 271QPX QD-OLED 27\"", "brand": "MSI", "price": 64990, "score": 88,
+      "specs": { "sizeInch": 26.5, "resolution": "1440p", "refreshHz": 360, "panel": "QD-OLED" },
+      "visual": { "color": "#101114", "accent": "#EF4444", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-uhd-27-60", "name": "LG 27UL500 27\"", "brand": "LG", "price": 23990, "score": 44,
+      "specs": { "sizeInch": 27.0, "resolution": "2160p", "refreshHz": 60, "panel": "IPS" },
+      "visual": { "color": "#E8EAEE", "accent": "#9CA3AF", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-uhd-27-160", "name": "ASUS TUF Gaming VG27UQ1A 27\"", "brand": "ASUS", "price": 39990, "score": 64,
+      "specs": { "sizeInch": 27.0, "resolution": "2160p", "refreshHz": 160, "panel": "IPS" },
+      "visual": { "color": "#141518", "accent": "#F59E0B", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-uhd-28-144", "name": "Gigabyte M28U 28\"", "brand": "Gigabyte", "price": 44990, "score": 70,
+      "specs": { "sizeInch": 28.0, "resolution": "2160p", "refreshHz": 144, "panel": "IPS" },
+      "visual": { "color": "#141518", "accent": "#F97316", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-uhd-32-240", "name": "MSI MPG 321URX QD-OLED 31.5\"", "brand": "MSI", "price": 99990, "score": 96,
+      "specs": { "sizeInch": 31.5, "resolution": "2160p", "refreshHz": 240, "panel": "QD-OLED" },
+      "visual": { "color": "#0F1012", "accent": "#EF4444", "style": "flat", "model": "monitor.glb" }
+    },
+    {
+      "id": "mon-uhd-32-g80", "name": "Samsung Odyssey OLED G8 32\"", "brand": "Samsung", "price": 109990, "score": 100,
+      "specs": { "sizeInch": 32.0, "resolution": "2160p", "refreshHz": 240, "panel": "QD-OLED" },
+      "visual": { "color": "#C9CDD4", "accent": "#E5E7EB", "style": "flat", "model": "monitor.glb" }
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "category": "PSU",
+  "items": [
+    {
+      "id": "psu-400", "name": "Powerman PM-400ATX 400 Вт", "brand": "Powerman", "price": 2490, "score": 5,
+      "specs": { "efficiency": "80+", "modular": false },
+      "compat": { "powerW": 400, "formFactor": "ATX" },
+      "visual": { "color": "#2A2C31", "accent": "#6B7280", "style": "psu" }
+    },
+    {
+      "id": "psu-450", "name": "DEEPCOOL PF450 450 Вт", "brand": "DEEPCOOL", "price": 3290, "score": 12,
+      "specs": { "efficiency": "80+ Standard", "modular": false },
+      "compat": { "powerW": 450, "formFactor": "ATX" },
+      "visual": { "color": "#1F2125", "accent": "#4B5563", "style": "psu" }
+    },
+    {
+      "id": "psu-550", "name": "DEEPCOOL PK550D 550 Вт", "brand": "DEEPCOOL", "price": 4590, "score": 24,
+      "specs": { "efficiency": "80+ Bronze", "modular": false },
+      "compat": { "powerW": 550, "formFactor": "ATX" },
+      "visual": { "color": "#1F2125", "accent": "#4B5563", "style": "psu" }
+    },
+    {
+      "id": "psu-650-b", "name": "DEEPCOOL PK650D 650 Вт", "brand": "DEEPCOOL", "price": 5290, "score": 30,
+      "specs": { "efficiency": "80+ Bronze", "modular": false },
+      "compat": { "powerW": 650, "formFactor": "ATX" },
+      "visual": { "color": "#1F2125", "accent": "#4B5563", "style": "psu" }
+    },
+    {
+      "id": "psu-650-g", "name": "MSI MAG A650GL 650 Вт", "brand": "MSI", "price": 7990, "score": 48,
+      "specs": { "efficiency": "80+ Gold", "modular": true },
+      "compat": { "powerW": 650, "formFactor": "ATX" },
+      "visual": { "color": "#18191D", "accent": "#9CA3AF", "style": "psu" }
+    },
+    {
+      "id": "psu-750-g", "name": "Corsair RM750e 750 Вт", "brand": "Corsair", "price": 10990, "score": 60,
+      "specs": { "efficiency": "80+ Gold", "modular": true },
+      "compat": { "powerW": 750, "formFactor": "ATX" },
+      "visual": { "color": "#151619", "accent": "#E5E7EB", "style": "psu" }
+    },
+    {
+      "id": "psu-850-g", "name": "be quiet! Pure Power 12 M 850 Вт", "brand": "be quiet!", "price": 13490, "score": 68,
+      "specs": { "efficiency": "80+ Gold", "modular": true },
+      "compat": { "powerW": 850, "formFactor": "ATX" },
+      "visual": { "color": "#141414", "accent": "#F59E0B", "style": "psu" }
+    },
+    {
+      "id": "psu-850-w", "name": "Corsair RM850x White 850 Вт", "brand": "Corsair", "price": 15990, "score": 72,
+      "specs": { "efficiency": "80+ Gold", "modular": true },
+      "compat": { "powerW": 850, "formFactor": "ATX" },
+      "visual": { "color": "#E8EAEE", "accent": "#9CA3AF", "style": "psu" }
+    },
+    {
+      "id": "psu-1000-g", "name": "Seasonic FOCUS GX-1000 1000 Вт", "brand": "Seasonic", "price": 17990, "score": 78,
+      "specs": { "efficiency": "80+ Gold", "modular": true },
+      "compat": { "powerW": 1000, "formFactor": "ATX" },
+      "visual": { "color": "#17181B", "accent": "#D1D5DB", "style": "psu" }
+    },
+    {
+      "id": "psu-1200-p", "name": "Corsair HX1200i 1200 Вт", "brand": "Corsair", "price": 28990, "score": 88,
+      "specs": { "efficiency": "80+ Platinum", "modular": true },
+      "compat": { "powerW": 1200, "formFactor": "ATX" },
+      "visual": { "color": "#121315", "accent": "#E5E7EB", "style": "psu" }
+    },
+    {
+      "id": "psu-1000-t", "name": "be quiet! Dark Power 13 1000 Вт", "brand": "be quiet!", "price": 32990, "score": 92,
+      "specs": { "efficiency": "80+ Titanium", "modular": true },
+      "compat": { "powerW": 1000, "formFactor": "ATX" },
+      "visual": { "color": "#0F0F10", "accent": "#F59E0B", "style": "psu" }
+    },
+    {
+      "id": "psu-1600-t", "name": "ASUS ROG THOR 1600T 1600 Вт", "brand": "ASUS", "price": 54990, "score": 100,
+      "specs": { "efficiency": "80+ Titanium", "modular": true },
+      "compat": { "powerW": 1600, "formFactor": "ATX" },
+      "visual": { "color": "#101114", "accent": "#EF4444", "style": "psu", "rgb": true }
+    }
+  ]
+}

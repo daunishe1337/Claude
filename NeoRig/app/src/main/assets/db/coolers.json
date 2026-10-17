@@ -1,0 +1,89 @@
+{
+  "category": "COOLER",
+  "items": [
+    {
+      "id": "cool-dk03i", "name": "ID-COOLING DK-03i (низкопрофильный)", "brand": "ID-COOLING", "price": 790, "score": 8,
+      "specs": { "coolerType": "AIR", "fans": 1 },
+      "compat": { "sockets": ["LGA1700", "LGA1851"], "maxTdpW": 100, "heightMm": 59 },
+      "visual": { "color": "#2B2E35", "accent": "#111827", "style": "low-profile" }
+    },
+    {
+      "id": "cool-se214", "name": "ID-COOLING SE-214-XT", "brand": "ID-COOLING", "price": 1390, "score": 18,
+      "specs": { "coolerType": "AIR", "fans": 1 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 180, "heightMm": 150 },
+      "visual": { "color": "#9CA3AF", "accent": "#1F2937", "style": "tower", "model": "cooler_tower.glb" }
+    },
+    {
+      "id": "cool-ag400", "name": "DEEPCOOL AG400", "brand": "DEEPCOOL", "price": 1990, "score": 28,
+      "specs": { "coolerType": "AIR", "fans": 1 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 220, "heightMm": 150 },
+      "visual": { "color": "#A3A9B5", "accent": "#111827", "style": "tower", "model": "cooler_tower.glb" }
+    },
+    {
+      "id": "cool-ak400-wh", "name": "DEEPCOOL AK400 WH", "brand": "DEEPCOOL", "price": 2790, "score": 34,
+      "specs": { "coolerType": "AIR", "fans": 1 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 220, "heightMm": 155 },
+      "visual": { "color": "#E5E7EB", "accent": "#F9FAFB", "style": "tower", "model": "cooler_tower.glb" }
+    },
+    {
+      "id": "cool-pa120", "name": "Thermalright Peerless Assassin 120 SE ARGB", "brand": "Thermalright", "price": 3590, "score": 50,
+      "specs": { "coolerType": "AIR", "fans": 2 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 260, "heightMm": 155 },
+      "visual": { "color": "#B6BCC6", "accent": "#111827", "style": "dual-tower", "model": "cooler_dual_tower.glb", "rgb": true }
+    },
+    {
+      "id": "cool-ak620", "name": "DEEPCOOL AK620", "brand": "DEEPCOOL", "price": 5990, "score": 58,
+      "specs": { "coolerType": "AIR", "fans": 2 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 260, "heightMm": 160 },
+      "visual": { "color": "#2A2D33", "accent": "#0B0C0E", "style": "dual-tower", "model": "cooler_dual_tower.glb" }
+    },
+    {
+      "id": "cool-nhl9a", "name": "Noctua NH-L9a-AM5 (низкопрофильный)", "brand": "Noctua", "price": 5990, "score": 20,
+      "specs": { "coolerType": "AIR", "fans": 1 },
+      "compat": { "sockets": ["AM4", "AM5"], "maxTdpW": 95, "heightMm": 37 },
+      "visual": { "color": "#C8B79E", "accent": "#7B4B3A", "style": "low-profile" }
+    },
+    {
+      "id": "aio-240", "name": "DEEPCOOL LE520 240 мм ARGB", "brand": "DEEPCOOL", "price": 5990, "score": 56,
+      "specs": { "coolerType": "AIO", "fans": 2 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 250, "radiatorMm": 240 },
+      "visual": { "color": "#16171B", "accent": "#2B2F38", "style": "aio", "model": "aio_pump.glb", "rgb": true }
+    },
+    {
+      "id": "aio-240-w", "name": "ID-COOLING FX240 White ARGB", "brand": "ID-COOLING", "price": 6490, "score": 57,
+      "specs": { "coolerType": "AIO", "fans": 2 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 240, "radiatorMm": 240 },
+      "visual": { "color": "#E8EAEE", "accent": "#FFFFFF", "style": "aio", "model": "aio_pump.glb", "rgb": true }
+    },
+    {
+      "id": "cool-darkrock5", "name": "be quiet! Dark Rock Pro 5", "brand": "be quiet!", "price": 9990, "score": 70,
+      "specs": { "coolerType": "AIR", "fans": 2 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 270, "heightMm": 168 },
+      "visual": { "color": "#141414", "accent": "#2B2B2B", "style": "dual-tower", "model": "cooler_dual_tower.glb" }
+    },
+    {
+      "id": "aio-360", "name": "Arctic Liquid Freezer III 360 A-RGB", "brand": "Arctic", "price": 10990, "score": 78,
+      "specs": { "coolerType": "AIO", "fans": 3 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 300, "radiatorMm": 360 },
+      "visual": { "color": "#15161A", "accent": "#2B2F38", "style": "aio", "model": "aio_pump.glb", "rgb": true }
+    },
+    {
+      "id": "aio-420", "name": "Arctic Liquid Freezer III 420", "brand": "Arctic", "price": 12990, "score": 84,
+      "specs": { "coolerType": "AIO", "fans": 3 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 330, "radiatorMm": 420 },
+      "visual": { "color": "#141518", "accent": "#26292F", "style": "aio", "model": "aio_pump.glb" }
+    },
+    {
+      "id": "cool-nhd15g2", "name": "Noctua NH-D15 G2", "brand": "Noctua", "price": 14990, "score": 82,
+      "specs": { "coolerType": "AIR", "fans": 2 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 280, "heightMm": 168 },
+      "visual": { "color": "#C9CDD3", "accent": "#C8A27C", "style": "dual-tower", "model": "cooler_dual_tower.glb" }
+    },
+    {
+      "id": "aio-360-elite", "name": "NZXT Kraken Elite 360 RGB", "brand": "NZXT", "price": 27990, "score": 92,
+      "specs": { "coolerType": "AIO", "fans": 3 },
+      "compat": { "sockets": ["AM4", "AM5", "LGA1700", "LGA1851"], "maxTdpW": 320, "radiatorMm": 360 },
+      "visual": { "color": "#E9EBEF", "accent": "#FFFFFF", "style": "aio-lcd", "model": "aio_pump.glb", "rgb": true }
+    }
+  ]
+}
