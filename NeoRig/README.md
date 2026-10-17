@@ -25,6 +25,13 @@ Android-приложение на **Kotlin + Jetpack Compose** (minSdk 26, Andro
 
 ---
 
+## Готовый APK
+
+Каждый push в ветку собирается на GitHub Actions (`.github/workflows/build-apk.yml`): сборка APK + юнит-тесты. Готовый файл публикуется в pre-release **neorig-latest**:
+**https://github.com/daunishe1337/Claude/releases/tag/neorig-latest** — откройте ссылку на телефоне, скачайте `NeoRig-debug.apk` и установите.
+
+---
+
 ## Как собрать APK в Android Studio
 
 ### Что понадобится
@@ -228,13 +235,8 @@ NeoRig/
 
 Запуск: `./gradlew test` или правой кнопкой по папке `test` → *Run Tests*.
 
-> В среде, где писался проект, Google Maven был недоступен, поэтому полную Android-сборку (AGP) там запустить было нельзя. Проверено следующее:
-> - доменная логика и 3D-сцена: юнит-тесты на JVM, все 35 проходят;
-> - GL-рендерер: компиляция против `android.jar` API 35;
-> - весь UI: компиляция против Compose Multiplatform 1.6 с заглушками Android-специфичных API;
-> - шейдеры: компиляция и рендер в WebGL2.
->
-> Финальная сборка APK выполняется у вас в Android Studio по инструкции выше.
+> Полная Android-сборка (AGP 8.7.3, Room/KSP, Compose) и юнит-тесты выполняются на GitHub Actions при каждом push.
+> Дополнительно 3D-шейдеры проверены рендером в WebGL2 (GLSL ES 3.00 совпадает с OpenGL ES 3.0).
 
 ---
 
