@@ -5,6 +5,10 @@
 	"plugin": "dev.optimod.mixin.OptimodMixinPlugin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"culling.CullableMixin",
+		"render.BlockEntityRenderDispatcherMixin",
+		"render.EntityRendererMixin",
+		"render.LevelExtractorMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

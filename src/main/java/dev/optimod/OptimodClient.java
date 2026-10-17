@@ -3,7 +3,10 @@ package dev.optimod;
 import dev.optimod.compat.CompatManager;
 import dev.optimod.compat.Modules;
 import dev.optimod.config.ConfigManager;
+import dev.optimod.culling.CullingManager;
+import dev.optimod.render.FrameContext;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -31,6 +34,7 @@ public final class OptimodClient implements ClientModInitializer {
 
 		ClientTickEvents.START_CLIENT_TICK.register(OptimodClient::onStartTick);
 		ClientTickEvents.END_CLIENT_TICK.register(OptimodClient::onEndTick);
+		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> CullingManager.shutdown());
 
 		Optimod.LOGGER.info("Optimod инициализирован за {} мс. Конфиг: {}",
 				(System.nanoTime() - start) / 1_000_000, ConfigManager.path());
@@ -57,5 +61,7 @@ public final class OptimodClient implements ClientModInitializer {
 	/** Вход в мир, выход из мира или смена измерения. */
 	private static void onLevelChanged(ClientLevel oldLevel, ClientLevel newLevel) {
 		Optimod.LOGGER.debug("Смена мира: {} -> {}", oldLevel, newLevel);
+		FrameContext.reset();
+		CullingManager.onLevelChanged(newLevel);
 	}
 }
