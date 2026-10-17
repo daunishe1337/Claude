@@ -12,6 +12,9 @@
 	"entrypoints": {
 		"client": [
 			"dev.optimod.OptimodClient"
+		],
+		"modmenu": [
+			"dev.optimod.gui.ModMenuIntegration"
 		]
 	},
 	"mixins": [

@@ -6,6 +6,7 @@ import dev.optimod.compat.CompatManager;
 import dev.optimod.compat.Modules;
 import dev.optimod.config.ConfigManager;
 import dev.optimod.culling.CullingManager;
+import dev.optimod.gui.OptimodKeyMappings;
 import dev.optimod.memory.MemoryManager;
 import dev.optimod.overlay.DebugOverlay;
 import dev.optimod.particle.ParticleTracker;
@@ -47,6 +48,9 @@ public final class OptimodClient implements ClientModInitializer {
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> CullingManager.shutdown());
 		ClientChunkEvents.CHUNK_UNLOAD.register(AnimationTracker::onChunkUnload);
 
+		// Экран настроек без Mod Menu — по клавише
+		OptimodKeyMappings.register();
+
 		// Модуль 7: оверлей рисуется поверх остального HUD
 		HudElementRegistry.addLast(id("debug_overlay"), new DebugOverlay());
 
@@ -74,6 +78,7 @@ public final class OptimodClient implements ClientModInitializer {
 		ParticleTracker.tick();
 		BackgroundManager.tick(client);
 		MemoryManager.tick(client);
+		OptimodKeyMappings.tick(client);
 
 		ClientLevel level = client.level;
 		if (level != lastLevel) {
