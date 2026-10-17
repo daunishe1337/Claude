@@ -1,0 +1,49 @@
+# Сборка APK NeoRig на GitHub Actions (там есть Android SDK и доступ к Google Maven)
+name: Build NeoRig APK
+
+on:
+  push:
+    branches: [ccr-28be3e23-ss7pnj]
+    paths:
+      - 'NeoRig/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: NeoRig
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace --no-daemon
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: NeoRig-debug-apk
+          path: NeoRig/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: NeoRig/app/build/reports/tests/
+          if-no-files-found: ignore
