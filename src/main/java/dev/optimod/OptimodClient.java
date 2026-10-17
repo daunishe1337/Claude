@@ -4,6 +4,7 @@ import dev.optimod.compat.CompatManager;
 import dev.optimod.compat.Modules;
 import dev.optimod.config.ConfigManager;
 import dev.optimod.culling.CullingManager;
+import dev.optimod.particle.ParticleTracker;
 import dev.optimod.render.FrameContext;
 import dev.optimod.stats.OptimodStats;
 import net.fabricmc.api.ClientModInitializer;
@@ -58,6 +59,7 @@ public final class OptimodClient implements ClientModInitializer {
 			tickCounter = 0;
 			OptimodStats.endSecond();
 		}
+		ParticleTracker.tick();
 
 		ClientLevel level = client.level;
 		if (level != lastLevel) {
@@ -71,5 +73,6 @@ public final class OptimodClient implements ClientModInitializer {
 		Optimod.LOGGER.debug("Смена мира: {} -> {}", oldLevel, newLevel);
 		FrameContext.reset();
 		CullingManager.onLevelChanged(newLevel);
+		ParticleTracker.clear();
 	}
 }

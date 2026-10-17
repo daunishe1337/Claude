@@ -23,6 +23,10 @@ public final class OptimodStats {
 	// --- Частицы: пропущено за последнюю секунду (модули 2 и 3) ---
 	public static int curParticlesByDistance;
 	public static int lastParticlesByDistance;
+	public static int curParticlesByLimit;
+	public static int lastParticlesByLimit;
+	public static int curParticlesOutOfView;
+	public static int lastParticlesOutOfView;
 
 	// --- Фоновый поток отсечения (пишет фоновый поток) ---
 	/** Длительность последнего прохода, микросекунды. */
@@ -50,6 +54,10 @@ public final class OptimodStats {
 	/** Вызывается раз в секунду (каждые 20 тиков) — для счётчиков частиц. */
 	public static void endSecond() {
 		lastParticlesByDistance = curParticlesByDistance;
+		lastParticlesByLimit = curParticlesByLimit;
+		lastParticlesOutOfView = curParticlesOutOfView;
 		curParticlesByDistance = 0;
+		curParticlesByLimit = 0;
+		curParticlesOutOfView = 0;
 	}
 }
