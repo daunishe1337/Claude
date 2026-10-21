@@ -236,7 +236,7 @@ const UI = (() => {
     t.className = 'toast ' + cls;
     t.innerHTML = html;
     el.toasts.appendChild(t);
-    while (el.toasts.children.length > 4) el.toasts.removeChild(el.toasts.firstChild);
+    while (el.toasts.children.length > 3) el.toasts.removeChild(el.toasts.firstChild);
     setTimeout(() => t.classList.add('out'), 2600);
     setTimeout(() => t.remove(), 3100);
   }
@@ -268,6 +268,19 @@ const UI = (() => {
       <div class="cmain"><div class="ctitle">${c.title}${c.lv !== undefined && c.lv !== '' ? ` <span class="lv">${c.lv}</span>` : ''}</div>
       ${c.desc ? `<div class="cdesc">${c.desc}</div>` : ''}${c.extra || ''}</div>
       ${c.btn ? `<div class="cbtn">${c.btn}</div>` : ''}</div>`;
+  // карточка уровневого улучшения (см. G.upgOffer): показывает «сейчас → после»
+  UI.upg = (mod, key, d, lv, extraCls = '') => {
+    const o = G.upgOffer(mod, key, d, lv);
+    const max = d.max === undefined ? Infinity : d.max;
+    let val = '';
+    if (d.val) val = o.max ? `<b>${d.val(lv)}</b>` : `${d.val(lv)} → <span class="hl">${d.val(lv + (o.n || 1))}</span>`;
+    return UI.card({
+      k: mod + '-' + key, icon: d.icon, title: d.name,
+      lv: 'ур. ' + lv + (max < Infinity ? '/' + max : ''),
+      desc: (d.desc ? d.desc + '<br>' : '') + val,
+      btn: UI.buy(`${mod}.upg:${key}`, o), cls: (o.max ? 'done' : o.ok ? 'can' : 'cant') + ' ' + extraCls,
+    });
+  };
   UI.sec = (title, sub = '') => `<div class="sec">${title}${sub ? ` <small>${sub}</small>` : ''}</div>`;
   UI.info = (html, cls = '') => `<div class="info ${cls}">${html}</div>`;
   // внутренние вкладки панели: tabs=[[id, label]], cur, act — действие модуля

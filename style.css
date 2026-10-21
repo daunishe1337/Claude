@@ -229,8 +229,8 @@ small { font-size: .78em; }
 @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 /* ---------- Уведомления ---------- */
-#toasts { position: fixed; left: 50%; transform: translateX(-50%); top: calc(var(--safe-t) + 98px); z-index: 60; width: min(94vw, 440px); display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
-.toast { padding: 10px 14px; border-radius: 14px; background: rgba(20, 20, 50, .95); border: 1px solid var(--line); font-size: 13.5px; box-shadow: 0 6px 20px rgba(0, 0, 0, .5); animation: tin .25s ease-out; transition: opacity .4s, transform .4s; }
+#toasts { position: fixed; left: 50%; transform: translateX(-50%); top: calc(var(--safe-t) + 70px); z-index: 60; width: min(92vw, 420px); display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+.toast { padding: 7px 12px; border-radius: 12px; background: rgba(20, 20, 50, .93); border: 1px solid var(--line); font-size: 12.5px; box-shadow: 0 6px 20px rgba(0, 0, 0, .5); animation: tin .25s ease-out; transition: opacity .4s, transform .4s; }
 .toast.good { border-color: rgba(69, 255, 154, .5); }
 .toast.unlock { border-color: rgba(255, 61, 242, .6); box-shadow: 0 0 16px rgba(255, 61, 242, .3); }
 .toast.ach { border-color: rgba(255, 211, 77, .7); box-shadow: 0 0 16px rgba(255, 211, 77, .3); }
@@ -261,3 +261,72 @@ small { font-size: .78em; }
   :root { --orb: min(52vw, 29vh, 220px); }
   #comboBox { margin-top: 10px; height: 40px; }
 }
+
+/* ============================================================
+   Этап 2: комбо, бустеры, навыки, события, этапы, достижения
+   ============================================================ */
+/* полоса этапа */
+.stage { padding: 8px 10px; border-radius: 14px; background: rgba(0, 0, 0, .28); border: 1px solid var(--line); }
+.st-row { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; }
+.stage .bar { margin-top: 5px; }
+.bossbtn { margin-top: 6px; min-height: 40px; padding: 8px; font-size: 14px; }
+.bossbtn.danger { animation: bosspulse 1.2s infinite; }
+@keyframes bosspulse { 50% { box-shadow: 0 0 18px rgba(255, 77, 109, .7); } }
+
+/* комбо */
+.combo { text-align: center; }
+.cmb-t { font-size: 15px; font-weight: 800; letter-spacing: 1px; color: var(--orange); text-shadow: 0 0 10px rgba(255, 176, 32, .6); }
+.cmb-t b { font-size: 20px; }
+.cmb-t span { color: #fff; opacity: .8; font-size: 13px; }
+.combo.full .cmb-t { color: var(--mag); text-shadow: 0 0 12px var(--mag); }
+.cmb-bar { height: 6px; border-radius: 4px; background: rgba(255, 255, 255, .1); overflow: hidden; margin-top: 4px; }
+.cmb-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--orange), var(--mag)); }
+
+/* значки активных усилений */
+.buff { font-size: 12px; padding: 3px 8px; border-radius: 12px; background: rgba(255, 211, 77, .16); border: 1px solid rgba(255, 211, 77, .5); color: var(--gold); font-weight: 700; }
+
+/* бустеры */
+.boosts { display: flex; gap: 6px; justify-content: center; }
+.bst, .skb { position: relative; width: min(52px, 13vw); height: min(52px, 13vw); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: #16163a; border: 2px solid var(--line); overflow: hidden; flex: none; }
+.bst::before, .skb::before { content: ''; position: absolute; inset: 0; background: conic-gradient(rgba(0, 0, 0, .65) calc(var(--p) * 360deg), transparent 0); }
+.bst .bi, .skb .bi { font-size: 24px; position: relative; }
+.bst .bt, .skb .bt { position: absolute; bottom: 2px; left: 0; right: 0; font-size: 10px; font-weight: 800; text-shadow: 0 1px 2px #000; }
+.bst.rdy { border-color: var(--cyan); box-shadow: 0 0 12px rgba(34, 230, 255, .55); animation: pulse 2s infinite; }
+.bst.act { border-color: var(--gold); box-shadow: 0 0 16px rgba(255, 211, 77, .8); }
+.bst.act::before { background: conic-gradient(rgba(255, 211, 77, .3) calc(var(--p) * 360deg), transparent 0); }
+.bst.cd, .skb.cd { opacity: .75; }
+
+/* навыки */
+.skills { display: flex; flex-direction: column; gap: 4px; }
+.bar.mana { height: 12px; margin-top: 0; }
+.bar.mana span { line-height: 12px; font-size: 9.5px; }
+.skrow { display: flex; gap: 6px; justify-content: center; }
+.skb { width: min(48px, 12.5vw); height: min(48px, 12.5vw); border-radius: 14px; }
+.skb::before { border-radius: 12px; }
+.skb.rdy { border-color: var(--violet); box-shadow: 0 0 12px rgba(163, 104, 255, .6); }
+.skb.act { border-color: var(--gold); box-shadow: 0 0 16px rgba(255, 211, 77, .8); }
+
+/* события */
+.ev { position: absolute; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 44px; z-index: 5; }
+.ev span { pointer-events: none; filter: drop-shadow(0 0 12px rgba(255, 211, 77, .9)); }
+.ev-golden { animation: evbob 1.6s ease-in-out infinite, evin .4s ease-out; }
+.ev-golden::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 211, 77, .55), transparent 70%); animation: pulse 1s infinite; pointer-events: none; }
+.ev-chest { animation: evin .4s ease-out; }
+.ev-chest i { position: absolute; right: 0; bottom: 2px; font-size: 13px; font-style: normal; font-weight: 800; background: var(--red); border-radius: 10px; padding: 0 6px; }
+.ev-meteor { font-size: 48px; animation: meteor linear forwards; }
+.ev-meteor span { filter: drop-shadow(0 0 14px rgba(255, 120, 40, .95)); }
+.ev.gone { opacity: 0; transform: scale(.4); transition: all .4s; }
+@keyframes evbob { 50% { transform: translateY(-10px) rotate(8deg); } }
+@keyframes evin { from { transform: scale(0); } }
+@keyframes meteor { from { transform: translate(0, 0) rotate(0); } to { transform: translate(85vw, 125vh) rotate(200deg); } }
+.rcoin { position: absolute; top: -50px; font-size: 34px; width: 50px; height: 50px; animation: rain linear forwards; z-index: 5; filter: drop-shadow(0 0 8px rgba(255, 211, 77, .9)); }
+@keyframes rain { to { transform: translateY(calc(100vh)) rotate(360deg); } }
+
+/* достижения */
+.achs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ach { padding: 8px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); opacity: .6; }
+.ach.got { opacity: 1; border-color: rgba(255, 211, 77, .45); background: rgba(255, 211, 77, .06); }
+.ach .an { font-size: 12.5px; font-weight: 700; }
+.ach .ad { font-size: 11px; color: var(--dim); margin-top: 2px; }
+.ach .bar { margin-top: 4px; }

@@ -100,6 +100,10 @@ const G = (() => {
     cps: 1,      // пассивный доход зданий
     cost: 1,     // цены покупок за монеты (скидки < 1)
     tapCps: 0,   // доля дохода/с, добавляемая к каждому тапу
+    // временные бонусы (бустеры, навыки, события, зелья) складываются,
+    // а не перемножаются: ×10 и ×100 вместе дают ×109, а не ×1000
+    tapTemp: 0,
+    allTemp: 0,
   };
   G.defStat = (k, base) => { G.STAT[k] = base; };
 
@@ -110,6 +114,10 @@ const G = (() => {
       add(k, v) { st[k] = (st[k] === undefined ? 0 : st[k]) + v; },
     };
     for (const m of G.mods) if (m.stats) m.stats(acc, st);
+    // защита: испорченный стат (NaN) возвращается к базе
+    for (const k in st) if (st[k] !== st[k]) { console.warn('NaN в стате', k); st[k] = G.STAT[k] !== undefined ? G.STAT[k] : 1; }
+    st.tap *= 1 + st.tapTemp;
+    st.all *= 1 + st.allTemp;
     G.st = st;
     const bld = G.byId.buildings, tap = G.byId.tap;
     G.cps = Math.min(Number.MAX_VALUE, (bld ? bld.rawCps() : 0) * st.cps * st.all);
@@ -134,24 +142,38 @@ const G = (() => {
 
   /* ---------- Уровневые покупки ---------- */
   // Цена n уровней с уровня lvl: base·r^lvl… ; скидки только на монеты.
-  // При «заморозке цен» цена фиксируется на уровне момента активации.
+  // При «заморозке цен» следующие G.freezeCap уровней каждого товара стоят
+  // как в момент активации, дальше цена растёт обычным образом.
+  G.freezeCap = 10;
   function frozen(key, lvl) {
     const fm = G.freezeMap;
     if (!fm) return -1;
     if (fm[key] === undefined) fm[key] = lvl;
     return Math.min(fm[key], lvl);
   }
+  function priceN(f, base, r, lvl, n) {
+    if (f < 0) return U.geoSum(base, r, lvl, n);
+    const cap = G.freezeCap;
+    const a = Math.max(0, Math.min(n, f + cap - lvl));      // уровни по замороженной цене
+    const L0 = Math.max(lvl, f + cap);
+    return a * base * Math.pow(r, f) + U.geoSum(base, r, L0 - cap, n - a);
+  }
   G.lvCost = (key, base, r, lvl, n, cur = 'coins') => {
     const disc = cur === 'coins' ? G.st.cost : 1;
     const f = cur === 'coins' ? frozen(key, lvl) : -1;
-    const c = f >= 0 ? n * base * Math.pow(r, f) : U.geoSum(base, r, lvl, n);
-    return c * disc;
+    return priceN(f, base, r, lvl, n) * disc;
   };
   G.lvMax = (key, base, r, lvl, money, cur = 'coins') => {
-    const m = money / (cur === 'coins' ? G.st.cost : 1);
+    let m = money / (cur === 'coins' ? G.st.cost : 1);
     const f = cur === 'coins' ? frozen(key, lvl) : -1;
-    if (f >= 0) return Math.min(100000, Math.floor((m / (base * Math.pow(r, f))) * (1 + 1e-9)));
-    return U.geoMax(base, r, lvl, m);
+    if (f < 0) return U.geoMax(base, r, lvl, m);
+    const cap = G.freezeCap, p = base * Math.pow(r, f);
+    const slots = Math.max(0, f + cap - lvl);
+    const k = Math.floor((m / p) * (1 + 1e-9));
+    if (k < slots) return k;
+    m -= slots * p;
+    const L0 = Math.max(lvl, f + cap);
+    return slots + U.geoMax(base, r, L0 - cap, m);
   };
   // «Предложение» покупки с учётом режима ×1/×10/×100/MAX
   G.offer = (key, base, r, lvl, maxLvl = Infinity, cur = 'coins', mode) => {
@@ -172,6 +194,24 @@ const G = (() => {
     G.dirty = true;
     return true;
   };
+
+  /* ---------- Универсальные улучшения ---------- */
+  // d = {name, icon, base, r, max, cur, val(lv)} ; obj — объект уровней модуля
+  G.upgOffer = (mod, key, d, lv, mode) => G.offer(mod + '.' + key, d.base, d.r, lv, d.max === undefined ? Infinity : d.max, d.cur || 'coins', mode);
+  // цели «ближайшей покупки» из списка улучшений модуля
+  G.upgGoals = (mod, UPG, obj) => Object.keys(UPG).map((k) => ({ icon: UPG[k].icon, name: UPG[k].name, cost: (UPG[k].cur || 'coins') === 'coins' ? G.upgOffer(mod, k, UPG[k], obj[k] || 0, 1).cost : 0 })).filter((g) => g.cost > 0);
+  G.buyUpg = (mod, key, d, obj) => {
+    const o = G.upgOffer(mod, key, d, obj[key] || 0);
+    if (!G.take(o)) { SFX.play('error'); return 0; }
+    obj[key] = (obj[key] || 0) + o.n;
+    G.emit('buy', 'upg', o.n, mod + '.' + key);
+    SFX.play('buy');
+    return o.n;
+  };
+  // система открыта (панель разблокирована хотя бы раз)
+  G.has = (panelId) => !!(G.S && G.S.flags['p:' + panelId]);
+  // опорный доход в секунду для наград событий: здания + 3 тапа/с + авто-тапы
+  G.income = () => G.cps + G.tapVal * 3 + (G.byId.autotap ? G.byId.autotap.inc() : 0);
 
   /* ---------- Сохранение ---------- */
   G.defaults = () => {
@@ -274,7 +314,10 @@ const G = (() => {
   /* ---------- Запуск ---------- */
   G.boot = () => {
     G.S = G.load();
+    // базовые значения статов до первого пересчёта (модули читают прошлые значения)
+    G.st = Object.assign({}, G.STAT);
     for (const m of G.mods) if (m.init) m.init();
+    G.recalc();
     G.recalc();
   };
   // запуск цикла (после инициализации интерфейса)
