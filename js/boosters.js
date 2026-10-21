@@ -8,9 +8,9 @@
 (() => {
   const BOOST = [
     { id: 'x2', name: 'Двойной доход', icon: '💰', dur: 30, cd: 300, need: 5e6, cost: 1e6,
-      desc: (p) => `Весь доход ${U.mul(2 + 0.25 * p)}` },
+      desc: (p) => `Весь доход ${U.mul(2 + 0.1 * p)}` },
     { id: 'tap', name: 'Ярость тапа', icon: '👊', dur: 20, cd: 300, need: 5e6, cost: 1.5e6,
-      desc: (p) => `Доход с тапа ${U.mul(10 + 2 * p)}` },
+      desc: (p) => `Доход с тапа ${U.mul(10 + p)}` },
     { id: 'auto', name: 'Авто-клик', icon: '🖱️', dur: 20, cd: 360, need: 5e7, cost: 1e7,
       desc: (p) => `${10 + 2 * p} тапов в секунду автоматически` },
     { id: 'rain', name: 'Золотой дождь', icon: '🌧️', dur: 15, cd: 480, need: 5e8, cost: 1e8,
@@ -24,9 +24,9 @@
   BOOST.forEach((b) => (BY[b.id] = b));
   // прокачка: длительность, сила, перезарядка
   const UP = {
-    d: { name: 'Длительность', r: 2.2, max: 20, k: 1 },
-    p: { name: 'Сила', r: 2.5, max: 20, k: 1.5 },
-    c: { name: 'Перезарядка', r: 2.6, max: 15, k: 2 },
+    d: { name: 'Длительность', r: 3, max: 20, k: 1 },
+    p: { name: 'Сила', r: 3.2, max: 20, k: 1.5 },
+    c: { name: 'Перезарядка', r: 3.5, max: 15, k: 2 },
   };
   let autoAcc = 0, rainAcc = 0;
 
@@ -45,7 +45,8 @@
     },
     open: (b) => (G.S.life.coins || 0) >= b.need,
     dur(b) { return b.dur * (1 + 0.15 * G.S.boosters.u[b.id].d) * G.st.boostDur; },
-    cd(b) { return Math.max(this.dur(b) + 5, b.cd * (1 - 0.04 * G.S.boosters.u[b.id].c) * G.st.boostCd); },
+    // перезарядка не короче 2.5 длительностей: бустер активен не больше ~30% времени
+    cd(b) { return Math.max(this.dur(b) * 2.5, b.cd * (1 - 0.04 * G.S.boosters.u[b.id].c) * G.st.boostCd); },
     pw(b) { return G.S.boosters.u[b.id].p; },
     active(id) { return Date.now() < G.S.boosters.end[id]; },
     left(id) { return Math.max(0, (G.S.boosters.end[id] - Date.now()) / 1000); },
@@ -55,8 +56,8 @@
 
     stats(acc) {
       const bp = G.st.boostPow || 1;
-      if (this.active('x2')) acc.add('allTemp', (1 + 0.25 * this.pw(BY.x2)) * bp);
-      if (this.active('tap')) acc.add('tapTemp', (9 + 2 * this.pw(BY.tap)) * bp);
+      if (this.active('x2')) acc.add('allTemp', (1 + 0.1 * this.pw(BY.x2)) * bp);
+      if (this.active('tap')) acc.add('tapTemp', (9 + this.pw(BY.tap)) * bp);
       if (this.active('freeze')) acc.mul('cost', 1 - Math.min(0.6, 0.03 * this.pw(BY.freeze)));
       if (this.active('luck')) {
         acc.add('critCh', (0.2 + 0.03 * this.pw(BY.luck)) * bp);

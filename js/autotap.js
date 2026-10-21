@@ -6,9 +6,9 @@
    ============================================================ */
 (() => {
   const UPG = {
-    fingers: { name: 'Палец', icon: '👉', base: 2500, r: 2.4, max: 30, desc: 'Ещё один авто-палец', val: (l) => l + ' шт.' },
-    spd: { name: 'Скорость пальцев', icon: '⚡', base: 8000, r: 1.9, max: 40, desc: 'Тапов в секунду каждым пальцем', val: (l) => (1 + 0.15 * l).toFixed(2) + '/с' },
-    pow: { name: 'Сила пальцев', icon: '💪', base: 5000, r: 1.6, max: 150, desc: 'Доля силы тапа у авто-тапа', val: (l) => U.pct(0.25 + 0.05 * l, 0) },
+    fingers: { name: 'Палец', icon: '👉', base: 2500, r: 4, max: 15, desc: 'Ещё один авто-палец', val: (l) => l + ' шт.' },
+    spd: { name: 'Скорость пальцев', icon: '⚡', base: 8000, r: 3, max: 20, desc: 'Тапов в секунду каждым пальцем', val: (l) => (1 + 0.1 * l).toFixed(1) + '/с' },
+    pow: { name: 'Сила пальцев', icon: '💪', base: 5000, r: 2.2, max: 50, desc: 'Доля силы тапа у авто-тапа', val: (l) => U.pct(0.25 + 0.05 * l, 0) },
   };
   let acc = 0, fxCount = 0, rendered = -1;
 
@@ -20,7 +20,7 @@
     // авто-тапов в секунду
     rate() {
       const s = G.S.autotap;
-      return (s.fingers + G.st.fingers) * (1 + 0.15 * s.spd) * G.st.autoSpeed;
+      return (s.fingers + G.st.fingers) * (1 + 0.1 * s.spd) * G.st.autoSpeed;
     },
     power() { return (0.25 + 0.05 * G.S.autotap.pow) * G.st.autoPow; },
     // примерный доход авто-тапов в секунду (без критов)

@@ -23,12 +23,14 @@
   const LINES = NAMES.map(([name, icon], i) => {
     const cost = 10 * Math.pow(11, i);
     const share = i % 5 === 4;                    // линия «% от дохода/с»
-    // ранние линии очень выгодны, поздние — сравнимы со зданиями
-    const ratio = Math.min(10 * Math.pow(2.6, i), 10 * bldRatio(cost));
+    // первые линии очень выгодны (быстрый старт), дальше при 5 тапах/с
+    // линия тапа окупается так же, как здание той же цены
+    const ratio = Math.min(10 * Math.pow(4, i), 5 * bldRatio(cost));
     return {
       i, name, icon, cost, share,
       // сила за уровень: flat — монеты за тап; share — доля дохода/с
-      pow: share ? 0.0005 * Math.pow(2, (i - 4) / 5) : cost / ratio,
+      pow: share ? 0.0002 * Math.pow(2, (i - 4) / 5) : cost / ratio,
+      max: share ? 100 : Infinity,
     };
   });
   const msMult = (lv) => { let m = 1; for (const x of MILESTONES) if (lv >= x) m *= 2; return m; };
@@ -63,7 +65,7 @@
       lv.forEach((v, i) => { if (v > 0) last = i; });
       return Math.min(LINES.length, last + 3);
     },
-    offerOf(i) { return G.offer('t' + i, LINES[i].cost, R, G.S.tap.lv[i]); },
+    offerOf(i) { return G.offer('t' + i, LINES[i].cost, R, G.S.tap.lv[i], LINES[i].max); },
     goals() {
       const n = this.shown();
       const out = [];

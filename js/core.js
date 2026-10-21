@@ -80,6 +80,11 @@ const G = (() => {
     G.emit('earn', v, src);
   };
 
+  /* ---------- Строки панели «Статистика» ---------- */
+  // модули добавляют функции, возвращающие [[подпись, значение], …]
+  G.statRows = [];
+  G.statRow = (order, fn) => { G.statRows.push({ order, fn }); G.statRows.sort((a, b) => a.order - b.order); };
+
   /* ---------- Счётчики статистики ---------- */
   G.count = (k, n = 1) => {
     const S = G.S;
@@ -123,6 +128,42 @@ const G = (() => {
     G.cps = Math.min(Number.MAX_VALUE, (bld ? bld.rawCps() : 0) * st.cps * st.all);
     G.tapVal = Math.min(Number.MAX_VALUE, (tap ? tap.base() : 1) * st.tap * st.all + st.tapCps * G.cps);
     G.dirty = false;
+  };
+
+  /* ---------- Словарь характеристик ---------- */
+  // ключ -> [название, тип]: pct — множитель +X%, neg — множитель −X%,
+  // pp — прибавка в процентных пунктах, abs — абсолютная прибавка
+  G.SN = {
+    all: ['Весь доход', 'pct'], tap: ['Тап', 'pct'], cps: ['Доход зданий', 'pct'],
+    critCh: ['Шанс крита', 'pp'], critMul: ['Сила крита', 'abs'], megaCh: ['Шанс мегакрита', 'pp'], megaMul: ['Сила мегакрита', 'abs'],
+    comboLen: ['Длина комбо', 'abs'], comboDecay: ['Угасание комбо, с', 'abs'], comboPow: ['Сила комбо', 'pct'],
+    autoPow: ['Сила авто-тапа', 'pct'], autoSpeed: ['Скорость авто-тапа', 'pct'], fingers: ['Авто-пальцы', 'abs'],
+    skillPow: ['Сила навыков', 'pct'], skillCd: ['Перезарядка навыков', 'neg'], manaMax: ['Макс. мана', 'abs'], manaRegen: ['Реген маны', 'pct'],
+    cost: ['Цены', 'neg'], crystal: ['Кристаллы', 'pct'], dust: ['Звёздная пыль', 'pct'], souls: ['Души', 'pct'],
+    bossDmg: ['Урон по боссам', 'pct'], bossTime: ['Время боя с боссом, с', 'abs'], bossHp: ['HP боссов', 'neg'],
+    boostDur: ['Длительность бустеров', 'pct'], boostPow: ['Сила бустеров', 'pct'], boostCd: ['Перезарядка бустеров', 'neg'],
+    evReward: ['Награды событий', 'pct'], evFreq: ['Частота событий', 'pct'], xp: ['Опыт героя', 'pct'], drop: ['Добыча', 'pct'],
+    offline: ['Офлайн-доход', 'pct'], offlineH: ['Офлайн-лимит, ч', 'abs'], combat: ['Боевая сила', 'pct'], combatHp: ['Здоровье', 'pct'],
+    pet: ['Бонусы питомцев', 'pct'], potion: ['Сила зелий', 'pct'], tapCps: ['Тап от дохода/с', 'pp'], stageReq: ['Требования этапов', 'neg'],
+    mine: ['Добыча шахты', 'pct'], farm: ['Урожай', 'pct'], farmSpeed: ['Рост растений', 'pct'], research: ['Скорость исследований', 'pct'],
+    eggs: ['Яйца', 'pct'], synergy: ['Синергия зданий', 'pct'], masteryK: ['Мастерство', 'pct'], metaK: ['Мета-множитель', 'pct'],
+    army: ['Сила армии', 'pct'], bossDps: ['Урон армии по боссу', 'pp'], achPow: ['Бонус достижений', 'pct'],
+  };
+  // текст бонуса: statText('tap', 0.15) -> "Тап +15%"
+  G.statText = (k, v) => {
+    const d = G.SN[k] || [k, 'pct'];
+    const t = d[1];
+    if (t === 'pct') return `${d[0]} +${U.pct(v, v < 0.1 ? 1 : 0)}`;
+    if (t === 'neg') return `${d[0]} −${U.pct(v, v < 0.1 ? 1 : 0)}`;
+    if (t === 'pp') return `${d[0]} +${U.pct(v, 2)}`;
+    return `${d[0]} +${U.fmt(Math.round(v * 100) / 100)}`;
+  };
+  // применить бонус к аккумулятору статов
+  G.applyStat = (acc, k, v) => {
+    const t = (G.SN[k] || [k, 'pct'])[1];
+    if (t === 'pct') acc.mul(k, 1 + v);
+    else if (t === 'neg') acc.mul(k, Math.max(0.05, 1 - v));
+    else acc.add(k, v);
   };
 
   /* ---------- Тап ---------- */

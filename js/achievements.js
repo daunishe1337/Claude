@@ -78,7 +78,7 @@
   G.achTier('world', 'wd', ['Турист', 'Путешественник', 'Исследователь', 'Картограф', 'Повелитель миров'], () => G.byId.stage.worlds(), [2, 4, 6, 8, 10], (t) => `Открыть ${t} миров`);
 
   G.achCat('auto', 'Автоматизация', '🤖', 'Авто-тапер ×1.5', (a) => a.mul('autoPow', 1.5));
-  G.achTier('auto', 'fg', ['Помощник', 'Бригада', 'Армия пальцев', 'Тысячерукий'], () => G.S.autotap.fingers, [1, 5, 10, 25], (t) => `Купить ${t} пальцев`);
+  G.achTier('auto', 'fg', ['Помощник', 'Бригада', 'Армия пальцев', 'Тысячерукий'], () => G.S.autotap.fingers, [1, 5, 10, 15], (t) => `Купить ${t} пальцев`);
   G.achTier('auto', 'at', ['Автомат', 'Конвейер'], stat('autoTaps'), [1e4, 1e6], (t) => `${F(t)} авто-тапов`);
 
   /* ---------- Титулы ---------- */
@@ -92,7 +92,7 @@
   G.titleAdd('hunter', 'Охотник на боссов', '🏹', () => (G.S.stats.bossWins || 0) >= 25, 'Урон по боссам ×1.5', (a) => a.mul('bossDmg', 1.5));
   G.titleAdd('traveler', 'Путешественник', '🧭', () => G.byId.stage.worlds() >= 6, '+25% к душам', (a) => a.mul('souls', 1.25));
   G.titleAdd('lucky', 'Ловец удачи', '🍀', () => (G.S.stats.golden || 0) >= 50, 'Награды событий ×1.5', (a) => a.mul('evReward', 1.5));
-  G.titleAdd('fingers', 'Тысячерукий', '🖐️', () => G.S.autotap.fingers >= 25, 'Авто-тапер ×1.5', (a) => a.mul('autoPow', 1.5));
+  G.titleAdd('fingers', 'Тысячерукий', '🖐️', () => G.S.autotap.fingers >= 15, 'Авто-тапер ×1.5', (a) => a.mul('autoPow', 1.5));
   G.titleAdd('collector', 'Коллекционер', '🏅', () => achN() >= 50, '+10% ко всему доходу', (a) => a.mul('all', 1.1));
   G.titleAdd('legend', 'Легенда', '👑', () => achN() >= 80, '+25% ко всему доходу', (a) => a.mul('all', 1.25));
 
@@ -101,7 +101,8 @@
     id: 'ach',
     reset: 0,
     CATS, ALL, TITLES,
-    state: () => ({ got: {}, seen: 0, title: 'novice', view: 'list' }),
+    state: () => ({ got: {}, seen: 0, title: 'novice', title2: '', view: 'list' }),
+    slots: () => (G.byId.prestige && G.byId.prestige.uni() >= 3 ? 2 : 1),
     onReset(layer) { if (layer >= 9) G.S.ach.got = {}; },
     count: achN,
     catDone(c) { return c.list.length > 0 && c.list.every((a) => G.S.ach.got[a.id]); },
@@ -111,6 +112,8 @@
       for (const id in CATS) if (this.catDone(CATS[id])) CATS[id].st(acc);
       const t = TITLES.find((x) => x.id === G.S.ach.title);
       if (t && t.need()) t.st(acc);
+      const t2 = this.slots() > 1 && G.S.ach.title2 !== G.S.ach.title && TITLES.find((x) => x.id === G.S.ach.title2);
+      if (t2 && t2.need()) t2.st(acc);
     },
     check() {
       const got = G.S.ach.got;
@@ -168,20 +171,24 @@
         hint: 'Получите второй титул',
         render() {
           let h = UI.info('Надетый титул даёт бонус. Новые титулы открываются за достижения.');
+          const two = M.slots() > 1;
+          if (two) h += UI.info('🌌 Вселенная №4+: можно носить два титула.');
           for (const t of TITLES) {
-            const open = t.need(), on = G.S.ach.title === t.id;
-            h += UI.card({
-              k: 'ti' + t.id, icon: open ? t.icon : '🔒', title: t.name, desc: t.desc,
-              btn: open ? (on ? '<button class="buy max" disabled>Надет</button>' : `<button class="buy ok" data-a="ach.wear:${t.id}">Надеть</button>`) : '',
-              cls: on ? 'sel' : open ? '' : 'cant',
-            });
+            const open = t.need(), on = G.S.ach.title === t.id, on2 = two && G.S.ach.title2 === t.id;
+            let btn = '';
+            if (open) {
+              btn = on ? '<button class="buy max" disabled>Надет</button>' : `<button class="buy ok" data-a="ach.wear:${t.id}">Надеть</button>`;
+              if (two && !on) btn += on2 ? '<button class="buy max" disabled>Слот 2</button>' : `<button class="buy" data-a="ach.wear2:${t.id}">Слот 2</button>`;
+            }
+            h += UI.card({ k: 'ti' + t.id, icon: open ? t.icon : '🔒', title: t.name, desc: t.desc, btn, cls: on || on2 ? 'sel' : open ? '' : 'cant' });
           }
           return h;
         },
       },
     ],
     actions: {
-      wear(id) { const t = TITLES.find((x) => x.id === id); if (t && t.need()) { G.S.ach.title = id; SFX.play('buy'); } },
+      wear(id) { const t = TITLES.find((x) => x.id === id); if (t && t.need()) { G.S.ach.title = id; if (G.S.ach.title2 === id) G.S.ach.title2 = ''; SFX.play('buy'); } },
+      wear2(id) { const t = TITLES.find((x) => x.id === id); if (t && t.need() && M.slots() > 1) { G.S.ach.title2 = id; SFX.play('buy'); } },
     },
   });
   G.defStat('achPow', 1);

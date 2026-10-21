@@ -43,7 +43,7 @@
       applyVisual(true);
     },
     req(n) { return 2000 * Math.pow(1.11, n - 1) * G.st.stageReq; },
-    bossHp(n) { return this.req(n) * 4 * G.st.bossHp; },
+    bossHp(n) { return this.req(n) * 8 * G.st.bossHp; },
     bossTime() { return 30 + G.st.bossTime; },
     worlds() { return Math.min(LOCS.length, 1 + Math.floor((G.S.stage.maxEver - 1) / BOSS_EVERY)); },
     world() { return Math.min(LOCS.length - 1, Math.floor((G.S.stage.stage - 1) / BOSS_EVERY)); },
@@ -53,12 +53,12 @@
 
     stats(acc) {
       const s = G.S.stage;
-      if (s.wins) acc.mul('all', Math.pow(1.3 * G.st.bossMultK, s.wins));
-      // каждый открытый мир: +10% ко всему доходу
-      acc.mul('all', 1 + 0.1 * (this.worlds() - 1));
+      if (s.wins) acc.mul('all', Math.pow(1.15 * G.st.bossMultK, s.wins));
+      // каждый открытый мир: +5% ко всему доходу
+      acc.mul('all', 1 + 0.05 * (this.worlds() - 1));
       this.loc().st(acc);
-      // непотраченные души: +2% к доходу каждая
-      acc.mul('all', 1 + 0.02 * G.cur('souls') * G.st.soulPow);
+      // непотраченные души: +1% к доходу каждая
+      acc.mul('all', 1 + 0.01 * G.cur('souls') * G.st.soulPow);
     },
     levels() { return Math.floor(G.S.stage.maxEver / 10); },
 
@@ -67,11 +67,14 @@
       const s = G.S.stage;
       if (isBoss(s.stage)) return;
       s.prog += v;
-      let guard = 0;
-      while (s.prog >= this.req(s.stage) && !isBoss(s.stage) && guard++ < 2000) {
-        s.prog -= this.req(s.stage);
-        s.stage++;
-      }
+      const r0 = this.req(s.stage);
+      if (s.prog < r0) return;
+      // сколько этапов пройдено сразу (сумма геометрической прогрессии 1.11^n)
+      const toBoss = Math.ceil(s.stage / BOSS_EVERY) * BOSS_EVERY - s.stage;
+      let k = Math.floor(Math.log(s.prog * 0.11 / r0 + 1) / Math.log(1.11));
+      k = Math.max(1, Math.min(k, toBoss));
+      s.prog = Math.max(0, s.prog - r0 * (Math.pow(1.11, k) - 1) / 0.11);
+      s.stage += k;
       if (isBoss(s.stage)) s.prog = 0;
       if (s.stage > s.maxEver) {
         const before = this.worlds();
@@ -116,7 +119,7 @@
       hint: 'Победите первого босса',
       render() {
         const n = M.worlds(), s = G.S.stage;
-        let h = UI.info(`Открыто миров: <b>${n}/${LOCS.length}</b> · каждый даёт +10% ко всему доходу (сейчас +${(n - 1) * 10}%).<br>Активный мир задаёт фон, объект тапа и особый бонус.`);
+        let h = UI.info(`Открыто миров: <b>${n}/${LOCS.length}</b> · каждый даёт +5% ко всему доходу (сейчас +${(n - 1) * 5}%).<br>Активный мир задаёт фон, объект тапа и особый бонус.`);
         h += `<div class="card" data-k="lauto"><div class="cmain"><div class="ctitle">Авто-переход</div><div class="cdesc">Переключаться на новый мир при открытии</div></div>
           <div class="cbtn"><button class="switch${s.auto ? ' on' : ''}" data-a="stage.auto"><i></i></button></div></div>`;
         LOCS.forEach((L, i) => {
@@ -186,7 +189,7 @@
       html: `<div class="center"><div style="font-size:60px">${M.loc().boss}</div>
         <p>Этап ${n} пройден${first ? ' <b class="hl">впервые</b>' : ''}!</p>
         <div class="big">+${souls} 👻</div>
-        <p>Множитель боссов в этом забеге: <b class="hl">${U.mul(Math.pow(1.3 * G.st.bossMultK, s.wins))}</b></p></div>`,
+        <p>Множитель боссов в этом забеге: <b class="hl">${U.mul(Math.pow(1.15 * G.st.bossMultK, s.wins))}</b></p></div>`,
       buttons: [{ text: 'Отлично!', cls: 'pri' }],
     });
     applyVisual();
@@ -230,7 +233,7 @@
   UI.view('stageBar', 1, () => {
     const s = G.S.stage, L = M.loc();
     let h = `<div class="stage"><div class="st-row"><span>${L.icon} ${L.name} · <b>Этап ${s.stage}</b></span>`;
-    h += s.wins ? `<span class="hl">${U.mul(Math.pow(1.3 * G.st.bossMultK, s.wins))} 👑</span>` : `<span class="dim">рекорд ${s.maxEver}</span>`;
+    h += s.wins ? `<span class="hl">${U.mul(Math.pow(1.15 * G.st.bossMultK, s.wins))} 👑</span>` : `<span class="dim">рекорд ${s.maxEver}</span>`;
     h += '</div>';
     if (fight) {
       const left = Math.max(0, (fight.end - Date.now()) / 1000);

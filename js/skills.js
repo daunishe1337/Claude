@@ -55,6 +55,8 @@
       if (!sk || l < 1) return;
       if (this.cdLeft(id) > 0 || s.mana < sk.mana) { SFX.play('error'); G.toast(s.mana < sk.mana ? '🔮 Не хватает маны' : '⏱ Навык перезаряжается'); return; }
       s.mana -= sk.mana;
+      // реликвия «Зеркало судьбы»: шанс вернуть ману
+      if (G.byId.artifacts && G.byId.artifacts.has('mirror') && Math.random() < 0.25) { s.mana += sk.mana; G.toast('🪞 Мана возвращена'); }
       s.ready[id] = Date.now() + this.cd(sk) * 1000;
       const sp = G.st.skillPow || 1;
       const orb = document.getElementById('orb').getBoundingClientRect();

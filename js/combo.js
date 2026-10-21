@@ -7,10 +7,10 @@
    ============================================================ */
 (() => {
   const UPG = {
-    len: { name: 'Длина комбо', icon: '📏', base: 600, r: 1.45, max: 60, desc: 'Сколько тапов подряд учитывается', val: (l) => (25 + 10 * l) + ' тапов' },
-    pow: { name: 'Макс. множитель', icon: '🔥', base: 900, r: 1.5, max: 60, desc: 'Множитель на полной длине', val: (l) => U.mul(1 + M.lenOf(G.S.combo.len) * M.powOf(l)) },
-    decay: { name: 'Время угасания', icon: '⏳', base: 1500, r: 1.6, max: 30, val: (l) => (1.2 + 0.1 * l).toFixed(1) + ' с' },
-    rew: { name: 'Награды за серии', icon: '🎁', base: 5000, r: 1.6, max: 40, desc: 'Бонус за 100/500/1000 тапов подряд', val: (l) => '+' + U.pct(0.25 * l, 0) },
+    len: { name: 'Длина комбо', icon: '📏', base: 600, r: 1.8, max: 60, desc: 'Сколько тапов подряд учитывается', val: (l) => (25 + 5 * l) + ' тапов' },
+    pow: { name: 'Макс. множитель', icon: '🔥', base: 900, r: 1.85, max: 60, desc: 'Множитель на полной длине', val: (l) => U.mul(1 + M.lenOf(G.S.combo.len) * M.powOf(l)) },
+    decay: { name: 'Время угасания', icon: '⏳', base: 1500, r: 2.5, max: 30, val: (l) => (1.2 + 0.1 * l).toFixed(1) + ' с' },
+    rew: { name: 'Награды за серии', icon: '🎁', base: 5000, r: 2.2, max: 40, desc: 'Бонус за 100/500/1000 тапов подряд', val: (l) => '+' + U.pct(0.25 * l, 0) },
   };
   // награды за серии: порог -> секунды дохода
   const STREAKS = [[100, 10], [500, 30], [1000, 90]];
@@ -21,8 +21,8 @@
     reset: 1,
     UPG,
     state: () => ({ len: 0, pow: 0, decay: 0, rew: 0 }),
-    lenOf: (l) => 25 + 10 * l + G.st.comboLen,
-    powOf: (l) => (0.01 + 0.002 * l) * (G.st.comboPow || 1),
+    lenOf: (l) => 25 + 5 * l + G.st.comboLen,
+    powOf: (l) => (0.01 + 0.0003 * l) * (G.st.comboPow || 1),
     decayT: () => 1.2 + 0.1 * G.S.combo.decay + G.st.comboDecay,
     count: () => count,
     // текущий множитель комбо

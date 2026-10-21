@@ -6,7 +6,7 @@
    • множитель ×2 на 25/50/100/200/500 уровнях;
    • 3 личных улучшения у каждого (×2, ×3, ×5);
    • синергия: каждые 10 уровней здания дают +1% соседям;
-   • Мастерство: бонус от суммарного уровня всех зданий.
+   • Мастерство: каждые 10 суммарных уровней зданий дают +2% к их доходу.
    ============================================================ */
 (() => {
   const R = 1.15;
@@ -67,9 +67,9 @@
       for (let i = 0; i < B.length; i++) if (G.S.buildings.lv[i]) s += this.one(i);
       return s;
     },
-    // Мастерство: каждые 10 суммарных уровней = 1 уровень, +4% к доходу зданий
+    // Мастерство: каждые 10 суммарных уровней = 1 уровень, +2% к доходу зданий
     mastery() { return Math.floor(this.total() / 10); },
-    stats(acc) { acc.mul('cps', 1 + 0.04 * this.mastery() * (G.st.masteryK || 1)); },
+    stats(acc) { acc.mul('cps', 1 + 0.02 * this.mastery() * (G.st.masteryK || 1)); },
     levels() { const s = G.S.buildings; return this.total() + s.up.reduce((a, u) => a + u[0] + u[1] + u[2], 0); },
 
     shown() {
@@ -105,7 +105,7 @@
         const ml = M.mastery(), tot = M.total();
         let h = UI.amt();
         h += `<div class="info"><div class="row"><span>⚡ Доход: <b>${U.fmt(G.cps)}/с</b></span><span>🏅 Мастерство ${ml}</span></div>
-          ${UI.bar((tot % 10) / 10, 'thin', `Σ уровней ${tot} · +${U.pct(0.04 * ml * (G.st.masteryK || 1), 0)} к зданиям`)}</div>`;
+          ${UI.bar((tot % 10) / 10, 'thin', `Σ уровней ${tot} · +${U.pct(0.02 * ml * (G.st.masteryK || 1), 0)} к зданиям`)}</div>`;
         const n = M.shown();
         const total = Math.max(1e-9, M.rawCps());
         for (let i = 0; i < n; i++) {

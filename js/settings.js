@@ -11,9 +11,7 @@
       <div class="cbtn"><button class="switch${on ? ' on' : ''}" data-a="settings.toggle:${key}"><i></i></button></div></div>`;
   };
 
-  // строки статистики: [подпись, значение]
-  const statRows = [];
-  G.statRow = (order, fn) => { statRows.push({ order, fn }); statRows.sort((a, b) => a.order - b.order); };
+  // базовые строки статистики: [подпись, значение]
   G.statRow(1, () => [
     ['👆 Тапов всего', U.fint(G.S.stats.taps || 0)],
     ['🪙 Монет за всё время', U.fmt(G.S.life.coins || 0)],
@@ -49,7 +47,7 @@
         id: 'stats', group: 'more', name: 'Статистика', icon: '📊', order: 998,
         render() {
           let h = '<div class="stats">';
-          for (const r of statRows) for (const [a, b] of r.fn()) h += `<div><span>${a}</span><b>${b}</b></div>`;
+          for (const r of G.statRows) for (const [a, b] of r.fn()) h += `<div><span>${a}</span><b>${b}</b></div>`;
           return h + '</div>';
         },
       },

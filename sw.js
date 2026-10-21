@@ -3,7 +3,7 @@
    Стратегия: сначала кэш, параллельно тихое обновление из сети.
    При выпуске новой версии меняется CACHE — старый кэш удаляется.
    ============================================================ */
-const CACHE = 'tap-empire-v2';
+const CACHE = 'tap-empire-v3';
 const FILES = [
   './',
   './index.html',
@@ -29,6 +29,8 @@ const FILES = [
   './js/stage.js',
   './js/offline.js',
   './js/achievements.js',
+  './js/prestige.js',
+  './js/meta.js',
   './js/settings.js',
   './js/main.js',
 ];
