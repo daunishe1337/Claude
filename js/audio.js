@@ -4,6 +4,7 @@
    ============================================================ */
 const SFX = (() => {
   let ac = null, master = null, lastTap = 0;
+  let gestured = false; // браузеры разрешают звук только после касания
 
   function ctx() {
     if (!ac) {
@@ -64,7 +65,7 @@ const SFX = (() => {
 
   return {
     play(name, arg) {
-      if (!G.S || !G.S.settings.sound) return;
+      if (!G.S || !G.S.settings.sound || !gestured) return;
       const c = ctx();
       if (!c || !P[name]) return;
       if (name === 'tap') {           // не чаще ~22 раз в секунду
@@ -73,7 +74,7 @@ const SFX = (() => {
       }
       try { P[name](arg); } catch (e) { /* звук не критичен */ }
     },
-    unlock() { if (G.S && G.S.settings.sound) ctx(); },
+    unlock() { gestured = true; if (G.S && G.S.settings.sound) ctx(); },
   };
 })();
 

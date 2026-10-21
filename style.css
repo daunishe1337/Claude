@@ -66,7 +66,7 @@ small { font-size: .78em; }
 .cchip.wx { margin-left: auto; color: var(--dim); }
 
 /* ---------- Экраны ---------- */
-#main { flex: 1; position: relative; overflow: hidden; }
+#main { flex: 1; position: relative; overflow: hidden; z-index: 2; }
 .screen { position: absolute; inset: 0; display: none; flex-direction: column; }
 .screen.active { display: flex; }
 
@@ -230,7 +230,7 @@ small { font-size: .78em; }
 
 /* ---------- Уведомления ---------- */
 #toasts { position: fixed; left: 50%; transform: translateX(-50%); top: calc(var(--safe-t) + 70px); z-index: 60; width: min(92vw, 420px); display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
-.toast { padding: 7px 12px; border-radius: 12px; background: rgba(20, 20, 50, .93); border: 1px solid var(--line); font-size: 12.5px; box-shadow: 0 6px 20px rgba(0, 0, 0, .5); animation: tin .25s ease-out; transition: opacity .4s, transform .4s; }
+.toast { padding: 6px 11px; border-radius: 12px; background: rgba(20, 20, 50, .88); border: 1px solid var(--line); font-size: 12px; line-height: 1.25; box-shadow: 0 6px 20px rgba(0, 0, 0, .5); animation: tin .25s ease-out; transition: opacity .4s, transform .4s; }
 .toast.good { border-color: rgba(69, 255, 154, .5); }
 .toast.unlock { border-color: rgba(255, 61, 242, .6); box-shadow: 0 0 16px rgba(255, 61, 242, .3); }
 .toast.ach { border-color: rgba(255, 211, 77, .7); box-shadow: 0 0 16px rgba(255, 211, 77, .3); }
@@ -247,7 +247,7 @@ small { font-size: .78em; }
 .shake2 { animation: shake2 .45s; }
 @keyframes shake { 25% { transform: translate(3px, -2px); } 50% { transform: translate(-3px, 2px); } 75% { transform: translate(2px, 1px); } }
 @keyframes shake2 { 15% { transform: translate(7px, -5px); } 30% { transform: translate(-7px, 4px); } 45% { transform: translate(5px, 5px); } 60% { transform: translate(-5px, -3px); } 80% { transform: translate(3px, 2px); } }
-#weatherFx { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+#weatherFx { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 
 /* ---------- Маленькие экраны ---------- */
 @media (max-width: 370px) {
@@ -403,3 +403,107 @@ small { font-size: .78em; }
 .pchip { padding: 6px 10px; border-radius: 12px; border: 1px solid var(--rc); background: var(--card2); font-size: 14px; }
 .pchip b { color: var(--gold); font-size: 11px; }
 .merge { padding: 6px 2px; font-size: 13px; }
+
+/* ============================================================
+   Этап 5: шахта, ферма, город, арена, биржа, созвездия,
+   карты, скины, погода, колесо, награды, сезон, магазин
+   ============================================================ */
+.resrow { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; margin: 4px 2px 8px; font-variant-numeric: tabular-nums; }
+.mblock { display: block; margin: 8px auto; width: 120px; height: 120px; border-radius: 22px; background: radial-gradient(circle at 40% 30%, #4a4a6a, #1a1a2e); border: 2px solid var(--line); box-shadow: inset 0 -8px 18px rgba(0, 0, 0, .5); }
+.mblock span { font-size: 72px; line-height: 1; }
+.mblock:active { transform: scale(.93); }
+
+/* ферма */
+.plots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.plot { aspect-ratio: 1; border-radius: 16px; background: linear-gradient(180deg, #3a2614, #24160a); border: 2px solid #5a3a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.plot span { font-size: 34px; transition: transform .3s; }
+.plot small { font-size: 10.5px; color: #e8d8b8; }
+.plot i { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--green); }
+.plot.empty { opacity: .7; border-style: dashed; }
+.plot.ready { border-color: var(--green); box-shadow: 0 0 14px rgba(69, 255, 154, .5); animation: pulse 1.5s infinite; }
+
+/* город и армия */
+.cityview, .armyview { display: flex; justify-content: center; align-items: flex-end; gap: 8px; flex-wrap: wrap; min-height: 44px; margin: 6px 0; padding: 8px; border-radius: 14px; background: linear-gradient(180deg, transparent, rgba(255, 255, 255, .05)); }
+.armyview span { font-size: 16px; }
+
+/* арена */
+.arena { padding: 10px; border-radius: 16px; background: linear-gradient(180deg, rgba(255, 45, 85, .1), rgba(0, 0, 0, .2)); border: 1px solid rgba(255, 77, 109, .35); }
+.foe { display: block; margin: 6px auto; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 77, 109, .35), transparent 70%); touch-action: manipulation; }
+.foe span { font-size: 96px; line-height: 1; display: inline-block; animation: evbob 1.4s ease-in-out infinite; }
+.foe:active span { transform: scale(.85); }
+
+/* биржа */
+.xrow { display: grid; grid-template-columns: 1fr 70px auto; gap: 6px; align-items: center; padding: 8px; margin-bottom: 6px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.xinfo { display: flex; align-items: center; gap: 6px; text-align: left; }
+.xinfo .xi { font-size: 24px; }
+.xinfo b { display: block; font-size: 13px; }
+.xinfo small { font-size: 11px; color: var(--dim); }
+.spark { width: 70px; height: 30px; }
+.xbtns { display: flex; flex-direction: column; gap: 4px; }
+.xbtns .mini { font-size: 10.5px; padding: 4px 6px; line-height: 1.15; }
+
+/* созвездия */
+.sky { border-radius: 16px; background: radial-gradient(circle at 50% 40%, #1a1450, #04020e 75%); border: 1px solid var(--line); margin: 8px 0; padding: 4px; }
+.skymap { width: 100%; height: auto; display: block; }
+.sstar { cursor: pointer; }
+.sstar.got { filter: drop-shadow(0 0 2px #ffd34d); }
+
+/* карты */
+.cgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 4px; }
+.ccard { aspect-ratio: .72; border-radius: 10px; border: 2px solid var(--rc); background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 20%, #15153a), #0d0d24); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2px; }
+.ccard span { font-size: 24px; }
+.ccard b { font-size: 9px; line-height: 1.1; }
+.ccard small { font-size: 9px; color: var(--gold); }
+.ccard.none { opacity: .35; }
+
+/* скины */
+.skins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.skin { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); text-align: center; }
+.skin > span { font-size: 34px; }
+.skin b { font-size: 12px; }
+.skin small { font-size: 10px; color: var(--green); }
+.skin.locked { opacity: .55; }
+.skin.on { border-color: var(--mag); box-shadow: 0 0 12px rgba(255, 61, 242, .35); }
+.bgprev { display: block; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); }
+
+/* погода */
+#weatherFx .wp { position: absolute; top: -10%; font-style: normal; color: #fff; pointer-events: none; }
+#weatherFx .wp.rain, #weatherFx .wp.storm { width: 1.5px; height: 18px; background: linear-gradient(180deg, transparent, rgba(160, 200, 255, .55)); animation: wfall linear infinite; }
+#weatherFx .wp.snow { font-size: 12px; opacity: .8; animation: wsnow linear infinite; }
+#weatherFx .wp.stars { font-size: 10px; color: #fff6c8; animation: wstar linear infinite; }
+#weatherFx .wp.wind { font-size: 14px; top: auto; animation: wwind linear infinite; }
+#weatherFx .fog { position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 60%, rgba(200, 200, 230, .12), transparent 60%); animation: wfog 16s ease-in-out infinite alternate; }
+#weatherFx .fog.f2 { animation-duration: 23s; background: radial-gradient(ellipse at 70% 40%, rgba(200, 200, 230, .1), transparent 60%); }
+@keyframes wfall { to { transform: translate(-30px, 115vh); } }
+@keyframes wsnow { to { transform: translate(40px, 115vh) rotate(360deg); } }
+@keyframes wstar { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-120px, 60vh); opacity: 0; } }
+@keyframes wwind { from { transform: translate(-10vw, 30vh) rotate(0); } to { transform: translate(110vw, 50vh) rotate(720deg); } }
+@keyframes wfog { to { transform: translateX(8%); } }
+
+/* колесо удачи */
+.wheel { position: relative; width: min(78vw, 300px); margin: 6px auto 10px; }
+.wwrap { width: 100%; aspect-ratio: 1; }
+.wsvg { width: 100%; height: 100%; transition: transform 3.5s cubic-bezier(.12, .7, .1, 1); filter: drop-shadow(0 0 14px rgba(255, 61, 242, .35)); }
+.wptr { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 26px; color: var(--gold); z-index: 2; text-shadow: 0 0 8px var(--gold); }
+
+/* ежедневная награда и сезон */
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 8px; }
+.calday { padding: 6px 0; border-radius: 10px; background: var(--card); border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; font-size: 12px; }
+.calday small { font-size: 16px; }
+.calday.sp { border-color: var(--gold); background: rgba(255, 211, 77, .1); }
+.calday.now { border-color: var(--cyan); box-shadow: 0 0 10px rgba(34, 230, 255, .4); }
+.slv { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.slvl { padding: 5px 2px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; min-height: 52px; opacity: .5; }
+.slvl b { font-size: 12px; }
+.slvl small { font-size: 9.5px; line-height: 1.15; text-align: center; }
+.slvl.open { opacity: 1; border-color: var(--green); box-shadow: 0 0 8px rgba(69, 255, 154, .4); }
+.slvl.got { opacity: .8; background: rgba(69, 255, 154, .08); }
+.slvl.big { border-width: 2px; border-color: var(--gold); }
+.evb { border-color: var(--ec); background: linear-gradient(160deg, color-mix(in srgb, var(--ec) 18%, transparent), rgba(0, 0, 0, .2)); }
+
+/* магазин */
+.shopgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+.offer { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); text-align: center; }
+.offer span { font-size: 30px; }
+.offer b { font-size: 11.5px; min-height: 28px; }
+.offer.sold { opacity: .4; }

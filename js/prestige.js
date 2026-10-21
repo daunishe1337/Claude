@@ -121,12 +121,12 @@
     /* ----- формулы ----- */
     // Всего кристаллов за вознесение (по монетам за вознесение, L = log10).
     // Пока лестница зданий не пройдена, монеты растут как (множитель)^3.7 —
-    // там нужен корень 10-й степени (1 💎 при 1e17, 10 при 1e27, 63 при 1e35),
+    // там нужен корень 10-й степени (1 💎 при 1e19, 10 при 1e29, 63 при 1e37),
     // дальше доход растёт линейно от множителя — кубический корень.
     crRaw(c) {
       const L = Math.log10(c + 1);
-      if (L < 17) return 0;
-      return L <= 35 ? Math.pow(10, (L - 17) / 10) : Math.pow(10, 1.8 + (L - 35) / 3);
+      if (L < 19) return 0;
+      return L <= 37 ? Math.pow(10, (L - 19) / 10) : Math.pow(10, 1.8 + (L - 37) / 3);
     },
     crTotal() { return Math.floor(this.crRaw(G.S.c.asc) * G.st.crystal); },
     crGain() { return Math.max(0, this.crTotal() - S().crAsc); },
@@ -181,7 +181,7 @@
       {
         id: 'p1', group: 'pres', name: 'Престиж', icon: '💎', order: 1,
         unlock: () => S().p1 > 0 || M.crTotal() >= 1,
-        hint: 'Заработайте 100aa монет за забег',
+        hint: 'Заработайте 10ab монет за забег',
         render: renderP1,
         badge: () => M.crGain() >= Math.max(10, S().crAsc * 0.5) || Object.values(TAL).some((t) => canTal(t)),
       },

@@ -125,7 +125,7 @@
         if (ok) {
           got[a.id] = Date.now();
           n++;
-          if (n <= 3) G.toast(`🏆 Достижение: <b>${a.name}</b> · +2% к доходу`, 'ach');
+          if (n <= 2) G.toast(`🏆 Достижение: <b>${a.name}</b> · +2% к доходу`, 'ach');
           const c = CATS[a.cat];
           if (this.catDone(c)) G.toast(`🌟 Категория «${c.name}» завершена: ${c.bonus}!`, 'ach');
           G.emit('ach', a.id);

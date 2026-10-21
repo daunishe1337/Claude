@@ -215,9 +215,12 @@
     const L = M.loc();
     const app = document.getElementById('app');
     if (!app) return;
-    if (force || app.dataset.loc !== String(L.i)) {
-      app.dataset.loc = L.i;
-      const [a, b, c, d, e] = L.c;
+    const bg = G.bgColors ? G.bgColors() : null;   // фон из коллекции скинов
+    const key = L.i + (bg ? bg[0] : '');
+    if (force || app.dataset.loc !== key) {
+      app.dataset.loc = key;
+      const [a0, b0, c, d, e] = L.c;
+      const [a, b] = bg || [a0, b0];
       const st = app.style;
       st.setProperty('--loc1', a); st.setProperty('--loc2', b);
       st.setProperty('--orbA', c); st.setProperty('--orbB', d); st.setProperty('--glow', e);

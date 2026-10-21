@@ -175,7 +175,9 @@ const UI = (() => {
     let far = null;
     for (const m of G.mods) if (m.farGoal) { const f = m.farGoal(); if (f && (!far || (f.prio || 0) > (far.prio || 0))) far = f; }
     let h = '';
-    if (best) h += `<div class="goal"><span>🎯</span><span class="gt">${best.icon} ${best.name}</span><b>${best.eta === Infinity ? '—' : '≈ ' + U.time(best.eta)}</b></div>`;
+    // без дохода в секунду (самое начало) показываем, сколько тапов осталось
+    const etaText = (g) => g.eta !== Infinity ? '≈ ' + U.time(g.eta) : G.tapVal > 0 ? Math.ceil((g.cost - G.cur('coins')) / G.tapVal) + ' тап.' : '—';
+    if (best) h += `<div class="goal"><span>🎯</span><span class="gt">${best.icon} ${best.name}</span><b>${etaText(best)}</b></div>`;
     if (far) h += `<div class="goal far"><span>🏔️</span><span class="gt">${far.text}</span><b>${far.eta || ''}</b></div>`;
     U.morph(el.goals, h);
   }
@@ -236,9 +238,9 @@ const UI = (() => {
     t.className = 'toast ' + cls;
     t.innerHTML = html;
     el.toasts.appendChild(t);
-    while (el.toasts.children.length > 3) el.toasts.removeChild(el.toasts.firstChild);
-    setTimeout(() => t.classList.add('out'), 2600);
-    setTimeout(() => t.remove(), 3100);
+    while (el.toasts.children.length > 2) el.toasts.removeChild(el.toasts.firstChild);
+    setTimeout(() => t.classList.add('out'), 2300);
+    setTimeout(() => t.remove(), 2800);
   }
 
   /* ---------- Хелперы разметки ---------- */

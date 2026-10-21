@@ -118,7 +118,10 @@ const U = (() => {
   // новые поля из defaults добавляются, сохранённые значения сохраняются
   const isObj = (o) => o && typeof o === 'object' && !Array.isArray(o);
   function merge(def, saved) {
-    if (saved === undefined || saved === null) return def;
+    if (saved === undefined) return def;
+    // поле по умолчанию пустое (null) — берём сохранённое значение как есть
+    if (def === null || def === undefined) return saved;
+    if (saved === null) return def;
     if (Array.isArray(def)) {
       if (!Array.isArray(saved)) return def;
       const out = def.slice();
