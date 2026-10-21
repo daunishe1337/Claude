@@ -352,3 +352,54 @@ small { font-size: .78em; }
 .tnode.lock { opacity: .4; }
 .tnode.sel { outline: 3px solid #fff; outline-offset: 2px; }
 .tlink { width: 3px; height: 10px; background: var(--line); }
+
+/* ============================================================
+   Этап 4: герой, классы, экипировка, руны, питомцы
+   ============================================================ */
+.btnrow.tight { gap: 4px; margin: 0; flex-wrap: nowrap; }
+.btnrow.tight .mini { padding: 8px 9px; font-size: 12.5px; }
+.classes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 8px; }
+.clsb { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 2px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+.clsb span { font-size: 26px; }
+.clsb b { font-size: 11.5px; }
+.clsb small { font-size: 9.5px; color: var(--dim); }
+.clsb.on { border-color: var(--gold); background: rgba(255, 211, 77, .12); box-shadow: 0 0 12px rgba(255, 211, 77, .35); }
+.ctree { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.crow { display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 8px 26px; border-radius: 14px; background: rgba(255, 255, 255, .025); border: 1px solid var(--line); position: relative; }
+.crow.lock { opacity: .55; }
+.creq { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--dim); font-weight: 700; }
+
+/* экипировка */
+.eqrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
+.eqs { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.eqs small { font-size: 10.5px; color: var(--dim); }
+.itile { width: 100%; aspect-ratio: 1; border-radius: 14px; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 25%, transparent), #12122e 70%); border: 2px solid var(--rc); display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 8px color-mix(in srgb, var(--rc) 35%, transparent); }
+.itile span { font-size: 28px; }
+.itile b { position: absolute; right: 3px; bottom: 1px; font-size: 11px; color: var(--gold); text-shadow: 0 1px 2px #000; }
+.itile.empty { --rc: #333355; opacity: .45; }
+.itile.sel { outline: 3px solid #fff; outline-offset: 1px; }
+.igrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
+.idet { padding: 12px; border-radius: 16px; background: var(--card2); border: 1px solid var(--rc); margin-bottom: 8px; box-shadow: 0 0 16px color-mix(in srgb, var(--rc) 25%, transparent); }
+.istats { margin: 6px 0; font-size: 13.5px; display: flex; flex-direction: column; gap: 2px; color: var(--green); }
+.socks { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+.sock { width: 40px; height: 40px; border-radius: 50%; border: 2px dashed var(--line); font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.sock.full { border-style: solid; border-color: var(--violet); }
+.sock small { font-size: 9px; }
+.sock.on { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.ench { font-size: 13px; margin: 6px 0; }
+
+/* питомцы */
+.pgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
+.ptile { aspect-ratio: 1; border-radius: 14px; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 22%, transparent), #12122e 72%); border: 2px solid var(--rc); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ptile span { font-size: 28px; line-height: 1; }
+.ptile b { position: absolute; left: 4px; top: 2px; font-size: 10.5px; }
+.ptile small { font-size: 9px; color: var(--gold); }
+.ptile i { position: absolute; right: 3px; top: 2px; font-style: normal; font-size: 11px; color: var(--green); }
+.ptile.act { box-shadow: 0 0 12px color-mix(in srgb, var(--rc) 60%, transparent); }
+.ptile.sel { outline: 3px solid #fff; outline-offset: 1px; }
+.ptile.none { opacity: .35; }
+.ptile.none small { color: var(--dim); font-size: 8.5px; }
+.pchips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.pchip { padding: 6px 10px; border-radius: 12px; border: 1px solid var(--rc); background: var(--card2); font-size: 14px; }
+.pchip b { color: var(--gold); font-size: 11px; }
+.merge { padding: 6px 2px; font-size: 13px; }
